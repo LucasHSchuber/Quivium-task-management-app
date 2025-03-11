@@ -22,15 +22,15 @@ export default defineConfig({
     },
     publicDir: 'src/assets',
     plugins: [react()],
-    server: {
-      proxy: {
-        '/index.php': {
-          target: 'https://backend.expressbild.org',
-          changeOrigin: true,
-          secure: false,
-          rewrite: (path) => path.replace(/^\/index.php/, '/index.php')
-        }
-      }
-    }
+    // server: {
+    //   proxy: {
+    //     '/index.php': {
+    //       target: 'https://backend.expressbild.org',
+    //       changeOrigin: true,
+    //       secure: false,
+    //       rewrite: (path) => path.replace(/^\/index.php/, '/index.php')
+    //     }
+    //   }
+    // }
   }
 })

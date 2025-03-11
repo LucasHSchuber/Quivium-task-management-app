@@ -1,5 +1,5 @@
 appId: COM.ELECTRON.APP
-productName: Photographer Portal
+productName: MyElectronApp
 directories:
   buildResources: build
 files:
@@ -9,8 +9,6 @@ files:
   - '!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
   - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
 extraFiles:
-  - from: 'BackupTransferChildProcess.exe'
-    to: './BackupTransferChildProcess.exe'
 asarUnpack:
   - "node_modules/sqlite3/build/Release/*.node"
   - resources/**
@@ -21,7 +19,7 @@ win:
         - x64
         - ia32
   icon: resources/logo.ico 
-  executableName: Photographer Portal
+  executableName: MyElectronApp
   asarUnpack: ["**/*.node"]
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
@@ -51,8 +49,8 @@ appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: false
 publish:
-  provider: github
-  owner: LucasHSchuber
-  repo: fotografportalen_winmac
-  releaseType: release
-  token: token
+  # provider: github
+  # owner: LucasHSchuber
+  # repo: fotografportalen_winmac
+  # releaseType: release
+  # token: token

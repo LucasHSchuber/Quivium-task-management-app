@@ -1,18 +1,20 @@
 /* sidemenu css */
 
+
 .sidemenu {
     position: fixed;
     top: 0;
     left: 0;
-    width: 7em;
-    height: 100vh;
-    background-color: #232323;
+    width: 13em;
+    height: 99vh;
+    background-color: #ececec;
     color: white;
-    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    /* box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); */
+    border-radius: 5px;
+    margin: 0.2em;
     z-index: 30;
     overflow-y: auto;
 }
-
 
 .logo img {
     margin-left: 1.2em;
@@ -24,41 +26,106 @@
 .logo:hover img{
     padding: 11.2px;
 }
-
-.link-img:hover {
-    transform: rotate(5deg);
+.logo-spin img {
+    animation: rotate 60s linear infinite;
 }
 
-.link-box {
-    margin-bottom: 2em;
-    cursor: pointer;
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
 }
 
-.menu {
-    list-style-type: none;
-    padding: 5em 0;
+.sidemenu-box{
+    color: rgb(24, 24, 24);
+    margin: 1em 1em;
+}
+.sidemenu-box h6{
+    font-weight: 600;
 }
 
-.link-img {
-    margin-left: 2.3em;
-    width: 2.2em;
-    transition: transform 0.3s ease;
+.sidemenu-menu{
+    margin-left: 1em;
 }
-
-.link-box p {
-    text-decoration: none !important;
-    color: white;
-    font-weight: 700;
+.sidemenu-menu h6{
+    font-weight: 400;
     font-size: 0.8em;
-    padding: 8px;
-    text-align: center;
 }
 
-.sidemenu .link-box a {
-    /* text-decoration: none; */
-    color: white;
-    transition: 0.2s ease;
+.link-box{
+    position: relative;
+    height: 1.35em;
+    width: 90%;
+    margin-bottom: 0.3em;
+    border-radius: 3px;
+    background-color: rgb(230, 230, 230);
+    padding: 0.1em 0.5em;
 }
+.link-box p{
+    color: rgb(89, 89, 89);
+    font-size: 0.7em;
+}
+.link-box-icon{
+    color: gray;
+    margin-top: 0.2em;
+    margin-right: 1em;
+}
+
+.liscolor{
+    margin-top: 0.15em;
+    height: 0.8em;
+    width: 0.8em;
+    border-radius: 30px;
+}
+
+.newlist-input{
+    width: 10.5em;
+    height: 1.8em;
+    font-size: 0.7em;
+    padding: 0.2em;
+    background-color: #f6f6f6;
+    border: 1px solid gray;
+    border-radius: 3px;
+}
+
+
+
+
+/* LISTMENU */
+.list-menu {
+    position: absolute;
+    background-color: rgb(249, 249, 249);
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    bottom: 20px;
+    right: 0;
+  }
+  
+  .list-menu ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .list-menu li {
+    padding: 4px 12px;
+    cursor: pointer;
+    font-size: 0.7em;
+    color:black;
+  }
+  
+  .list-menu li:hover {
+    background-color: #f0f0f0;
+  }
+  
+
+  
+
 
 .nointernet-box{
     position: absolute;
@@ -68,4 +135,6 @@
     color: rgb(255, 255, 255);
     background-color: red;
 }
+
+
 

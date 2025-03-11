@@ -1,12 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from 'react-router-dom';
-
 import { getBaseUrl } from '../assets/js/utils';
-// Determine the base URL based on the environment
-const apiBaseUrl = process.env.NODE_ENV === 'development'
-  ? '/index.php'
-  : 'https://backend.expressbild.org/index.php';
 
 
 function Register_window() {
@@ -76,36 +71,25 @@ function Register_window() {
           const userExistsResponse = await window.api.findUserByEmail(username);
           console.log('userExistsResponse', userExistsResponse);
           if (userExistsResponse) {
-            setErrorLogginginMessage("A user with the email already exists in the local database. Try to log in!");
+            setErrorLogginginMessage("A user with the email already exists. Try to log in!");
             return;
           }
         } catch (error) {
           console.log('error', error);
         }
-        setErrorLogginginMessage("You need to be connected to an internet connection to register a user");
+        setErrorLogginginMessage("You need an internet connection to register a new account");
         return;
-      }
-
-      localStorage.setItem("username", username);
-      try {
-        console.log("activating user.... ");
-        const url = getBaseUrl().url;
-        console.log(url);
-
-        const response = await axios.post(`${apiBaseUrl}/rest/photographer_portal/login`, {
-          'email': username,
-          'password': password
-        });
-        console.log('response', response);
-        if (response.status === 200) {
-          console.log('User:', response.data);
+      } else {
+        const userData = {
+          username: username,
+          password: password
+        }
           try {
-            const updatedResult = { ...response.data.result, password };
-            console.log(updatedResult);
-            const responseData = await window.api.createUser(updatedResult);
+            const responseData = await window.api.createUser(userData);
             console.log(responseData);
 
             if (responseData.success === true) {
+              localStorage.setItem("username", username);
               console.log("User created successfully");
               setSuccessRegisterMessage("Account activated successfully. You can now proceed to log in!")
               setPassword("");
@@ -119,32 +103,6 @@ function Register_window() {
           } catch (error) {
             console.log("error:", error);
           }
-        } else {
-          return null;
-        }
-      } catch (error) {
-        if (error.response.status === 403) {
-           // Check if email exists in local database. If it does, print message to interface
-           try {
-            const userExistsResponse = await window.api.findUserByEmail(username);
-            console.log('userExistsResponse', userExistsResponse);
-            if (userExistsResponse) {
-              setErrorLogginginMessage("A user with the email has already been added to the local database but with another password!");
-              return;
-            }
-          } catch (error) {
-            console.log('error', error);
-          }
-          console.log('response:', error.response.data.error);
-          setErrorLogginginMessage("Invalid password.");
-          setSuccessRegisterMessage("");
-       } else if (error.response.status === 401){ // Username does not exists in global database
-          console.log("user does not exists in local database or global database");
-          setErrorLogginginMessage("User not found. Try another email or contact ExpressBild for further help.");
-          setSuccessRegisterMessage("");
-        return;
-       }
-        return null;
       }
     }
   }
@@ -159,8 +117,6 @@ function Register_window() {
         <div style={{ textAlign: "left", width: "110%", marginLeft: "-1.5em" }}>
           {usernameMessage || passwordMessage || errorLogginginMessage ? (
             <ul className="error">
-              {/* {usernameMessage ? <li>{usernameMessage}</li> : ""}
-              {passwordMessage ? <li>{passwordMessage}</li> : ""} */}
               {errorLogginginMessage ? <li>{errorLogginginMessage}</li> : ""}
             </ul>
           ) : (
@@ -224,7 +180,8 @@ function Register_window() {
           }}
           style={{ color: "black" }}
         >
-          Already have an account? Log in here!</a>
+          Already activated your account? <br></br> Log in here!
+        </a>
 
       </div>
     </div >

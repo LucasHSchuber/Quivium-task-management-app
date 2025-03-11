@@ -1,6 +1,4 @@
 import { electronApp, optimizer, is } from "@electron-toolkit/utils";
-// require('dotenv').config();
-// const electron = require("electron");
 const electron = require('electron');
 const log = require("electron-log");
 const path = require("path");
@@ -11,7 +9,6 @@ const util = require("util");
 const sqlite3 = require("sqlite3").verbose();
 const fse = require("fs-extra");
 const axios = require('axios');
-// const icon = path.join(__dirname, "../../resources/icon2.png");
 const ipcMain = electron.ipcMain;
 const app = electron.app;
 const shell = electron.shell;
@@ -25,28 +22,11 @@ const https = require("https");
 const url = require("url");
 const ftp = require("basic-ftp");
 const bcrypt = require("bcrypt");
-// const tus = require("tus-js-client");
 const saltRounds = 10;
-// import * as tus from "tus-js-client";
 const tus = require("tus-js-client");
-
-// // using electron-reloader in dev mode only
-// if (isDev) {
-//   try {
-//     require("electron-reloader")(module);
-//   } catch (_) {}
-// }
-
 
 import express from "express";
 
-const ftpConfig = {
-  host: "ftp.expressbild.org",
-  Port: 21,
-  user: "FileTransfer2",
-  password: "J%sxdnNXT3YW",
-  secure: false,
-};
 
 // Override isPackaged property to simulate a packaged environment - DO NOT USE IN PRODUCTION MODE
 Object.defineProperty(app, "isPackaged", {
@@ -96,12 +76,6 @@ function createUpdateWindow(callback) {
     },
   });
 
-  // Listen for when the DOM is ready
-  // updateApplicationWindow.webContents.on("dom-ready", () => {
-  //   autoUpdater.checkForUpdatesAndNotify()
-  //     .then(() => console.log('Update check completed successfully.'))
-  //     .catch((error) => console.error('Update check failed:', error));
-  // });
 
   if (is.dev && process.env["ELECTRON_RENDERER_URL"]) {
     updateApplicationWindow.loadURL("http://localhost:5173/#/updateapplication_window");
@@ -124,11 +98,6 @@ function createUpdateWindow(callback) {
     updateApplicationWindow.webContents.openDevTools({ mode: "detach" });
   }
 
-  // updateApplicationWindow.webContents.setWindowOpenHandler((details) => {
-  //   shell.openExternal(details.url);
-  //   return { action: "deny" };
-  // });
-  // log.info(path.join(__dirname, "../preload/index.js"));
 }
 
 
@@ -534,10 +503,10 @@ import miscUpdates from "./miscUpdates_db";
 let dbPath;
 if (isDev) {
   // Development mode path
-  dbPath = path.join(__dirname, "..", "..", "resources", "fp.db");
+  dbPath = path.join(__dirname, "..", "..", "resources", "mydatabase.db");
 } else {
   // Production mode path
-  dbPath = path.join(app.getPath("userData"), "fp.db");
+  dbPath = path.join(app.getPath("userData"), "mydatabase.db");
 }
 
 // Create or open SQLite database
@@ -644,233 +613,84 @@ function createTables() {
       name: "users",
       query: `
         CREATE TABLE IF NOT EXISTS users (
-          user_id INTEGER PRIMARY KEY,
+          user_id INTEGER PRIMARY KEY AUTOINCREMENT,
           email TEXT NOT NULL UNIQUE,
-          firstname TEXT NOT NULL,
-          lastname TEXT NOT NULL,
+          firstname TEXT,
+          lastname TEXT,
           password TEXT NOT NULL,
           city TEXT,
           mobile VARCHAR,
-          lang TEXT NOT NULL,
           token TEXT,
           created TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
         )
       `,
     },
     {
-      name: "projects",
+      name: "lists",
       query: `
-        CREATE TABLE IF NOT EXISTS projects (
-          project_id INTEGER PRIMARY KEY AUTOINCREMENT,
-          project_uuid TEXT NOT NULL,
-          projectname TEXT NOT NULL,
-          photographername TEXT,
-          project_date TEXT NOT NULL,
-          type TEXT NOT NULL,
-          anomaly TEXT,
-          merged_teams TEXT,
-          unit BOOLEAN,
-          lang TEXT,
+        CREATE TABLE IF NOT EXISTS lists (
+          list_id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          color TEXT,
+          is_deleted INTEGER DEFAULT 0,
+          archived INTEGER DEFAULT 0,
+          archived_date TEXT,
           created TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-          alert_sale BOOLEAN,
-          is_deleted BOOLEAN DEFAULT 0,
-          is_sent BOOLEAN DEFAULT 0,
-          is_sent_id INTEGER,
-          files_uploaded BOOLEAN DEFAULT 0,
-          sent_date TEXT,
           user_id INTEGER NOT NULL,
           FOREIGN KEY (user_id) REFERENCES users(user_id)
         )
       `,
     },
     {
-      name: "teams",
+      name: "tasks",
       query: `
-        CREATE TABLE IF NOT EXISTS teams (
-          team_id INTEGER PRIMARY KEY AUTOINCREMENT,
-          teamname TEXT NOT NULL,
-          amount INTEGER,
-          leader_firstname TEXT,
-          leader_lastname TEXT,
-          leader_address TEXT,
-          leader_postalcode TEXT,
-          leader_county TEXT,
-          leader_mobile TEXT,
-          leader_email TEXT,
-          leader_ssn INTEGER,
-          calendar_amount INTEGER,
-          portrait BOOLEAN DEFAULT 0,
-          crowd BOOLEAN,
-          reason_not_portrait TEXT,
-          protected_id BOOLEAN,
-          named_photolink BOOLEAN,
-          sold_calendar BOOLEAN,
-          is_deleted BOOLEAN DEFAULT 0,
+        CREATE TABLE IF NOT EXISTS tasks (
+          task_id INTEGER PRIMARY KEY AUTOINCREMENT,
+          title TEXT NOT NULL,
+          description TEXT,
+          due_date TEXT,
+          updated TEXT,
+          is_deleted INTEGER DEFAULT 0,
+          is_completed INTEGER DEFAULT 0,
           created TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-          project_id INTEGER NOT NULL,
-          FOREIGN KEY (project_id) REFERENCES projects(project_id)
-        )
-      `,
-    },
-    {
-      name: "teams_history",
-      query: `
-        CREATE TABLE IF NOT EXISTS teams_history (
-          team_history_id INTEGER PRIMARY KEY AUTOINCREMENT,
-          teamname TEXT,
-          amount INTEGER,
-          leader_firstname TEXT,
-          leader_lastname TEXT,
-          leader_address TEXT,
-          leader_postalcode TEXT,
-          leader_county TEXT,
-          leader_mobile TEXT,
-          leader_email TEXT,
-          leader_ssn INTEGER,
-          calendar_amount INTEGER,
-          portrait BOOLEAN,
-          crowd BOOLEAN,
-          reason_not_portrait TEXT,
-          protected_id BOOLEAN,
-          named_photolink BOOLEAN,
-          sold_calendar BOOLEAN,
-          is_deleted BOOLEAN DEFAULT 0,
-          created TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-          team_id INTEGER NOT NULL,
-          FOREIGN KEY (team_id) REFERENCES teams(team_id)
-        )
-      `,
-    },
-    {
-      name: "_projects",
-      query: `
-        CREATE TABLE IF NOT EXISTS _projects (
-          project_id_ INTEGER PRIMARY KEY AUTOINCREMENT,
-          project_uuid TEXT NOT NULL, 
-          projectname TEXT NOT NULL,
-          start TEXT NOT NULL,
-          lang TEXT NOT NULL
-          -- UNIQUE project_uuid
-        )
-      `,
-    },
-    {
-      name: "ft_projects",
-      query: `
-        CREATE TABLE IF NOT EXISTS ft_projects (
-          ft_project_id INTEGER PRIMARY KEY AUTOINCREMENT,
-          project_uuid TEXT,
-          projectname TEXT,
-          is_sent BOOLEAN DEFAULT 0,
-          created TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-          user_id INTEGER,
-          project_id INTEGER,
-          is_deleted INTEGER DEFAULT 0, 
-          FOREIGN KEY (user_id) REFERENCES users(user_id),
-          FOREIGN KEY (project_id) REFERENCES projects(project_id)
-        )
-      `,
-    },
-    {
-      name: "ft_files",
-      query: `
-        CREATE TABLE IF NOT EXISTS ft_files (
-          ft_file_id INTEGER PRIMARY KEY AUTOINCREMENT,
-          filename VARCHAR(255) NOT NULL,
-          filepath VARCHAR(255),
-          uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          is_sent INTEGER DEFAULT 0,
-          ft_project_id INTEGER,
-          FOREIGN KEY (ft_project_id) REFERENCES ft_projects(ft_project_id)
-        )
-      `,
-    },
-    {
-      name: "bt_projects",
-      query: `
-        CREATE TABLE IF NOT EXISTS bt_projects (
-          bt_project_id INTEGER PRIMARY KEY AUTOINCREMENT,
-          project_uuid TEXT, 
-          projectname TEXT,
-          user_id INTEGER,
-          is_deleted BOOLEAN DEFAULT 0,
-          created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          list_id INTEGER NOT NULL,
+          user_id INTEGER NOT NULL,
+          FOREIGN KEY (list_id) REFERENCES lists(list_id)
           FOREIGN KEY (user_id) REFERENCES users(user_id)
         )
       `,
     },
     {
-      name: "bt_files",
+      name: "subtasks",
       query: `
-        CREATE TABLE IF NOT EXISTS bt_files (
-          bt_file_id INTEGER PRIMARY KEY AUTOINCREMENT,
-          bt_project_id INTEGER,
-          project_uuid TEXT,
-          filename TEXT NOT NULL,
-          file_path TEXT,     
-          file_size INTEGER,
-          is_sent BOOLEAN NOT NULL,
-          uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (bt_project_id) REFERENCES bt_projects(bt_project_id),
-          FOREIGN KEY (project_uuid) REFERENCES bt_projects(project_uuid) ON DELETE CASCADE
-        )
-      `,
-    },
-    {
-      name: "news",
-      query: `
-        CREATE TABLE IF NOT EXISTS news (
-          id INTEGER,
-          title TEXT,
-          content TEXT,
-          author TEXT,
-          created_at TEXT,
-          updated_at TEXT,
-          user_id INTEGER,
-          is_read BOOLEAN DEFAULT 0,
-          is_sent_date TIMESTAMP DEFAULT NULL,
-          deleted BOOLEAN DEFAULT 0
-        )
-      `,
-    },
-    {
-      name: "knowledgebase",
-      query: `
-        CREATE TABLE IF NOT EXISTS knowledgebase (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          article_id TEXT NOT NULL UNIQUE,
-          title TEXT NOT NULL UNIQUE,
-          description TEXT NOT NULL,
-          tags TEXT,
-          langs TEXT,
-          files TEXT,
-          author TEXT,         
-          created_at TEXT NOT NULL,
-          updated_at TEXT,     
-          deleted INTEGER DEFAULT 0
-        )
-      `,
-    },
-    {
-      name: "timereport",
-      query: `
-      CREATE TABLE IF NOT EXISTS timereport (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          projectname TEXT NOT NULL,
-          starttime TEXT NOT NULL, -- Changed TIME to TEXT
-          endtime TEXT NOT NULL, -- Changed TIME to TEXT
-          breaktime REAL DEFAULT 0.5, -- Use REAL for decimal numbers
-          miles REAL DEFAULT 0, -- Use REAL for decimal numbers
-          tolls REAL DEFAULT 0, -- Use REAL for decimal numbers
-          park REAL DEFAULT 0, -- Use REAL for decimal numbers
-          other_fees REAL DEFAULT 0, -- Use REAL for decimal numbers
-          is_sent BOOLEAN DEFAULT 0,
+        CREATE TABLE IF NOT EXISTS subtasks (
+          subtask_id INTEGER PRIMARY KEY AUTOINCREMENT,
+          title TEXT NOT NULL,
+          description TEXT,
+          due_date TEXT,
+          updated TEXT,
+          is_deleted INTEGER DEFAULT 0,
+          is_completed INTEGER DEFAULT 0,
           created TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-          project_date TEXT NOT NULL,
-          user_id INTEGER NOT NULL,
-          project_id INTEGER NOT NULL
+          task_id INTEGER NOT NULL,
+          FOREIGN KEY (task_id) REFERENCES tasks(task_id)
         )
-      `
+      `,
+    },
+    {
+      name: "posts",
+      query: `
+        CREATE TABLE IF NOT EXISTS posts (
+          post_id INTEGER PRIMARY KEY AUTOINCREMENT,
+          title TEXT NOT NULL,
+          text TEXT,
+          updated TEXT,
+          is_deleted INTEGER DEFAULT 0,
+          created TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          user_id INTEGER NOT NULL,
+          FOREIGN KEY (user_id) REFERENCES users(user_id)
+        )
+      `,
     },
     {
       name: "schema_version",
@@ -913,431 +733,13 @@ function createTables() {
       });
     });
   });
-  // return new Promise((resolve, reject) => {
-  //   let createdTables = 0;
-  //   tableDefinitions.forEach(({ name, query }) => {
-  //     db.run(query, (err) => {
-  //       if (err) {
-  //         reject(`Error creating ${name} table: ${err.message}`);
-  //       } else {
-  //         console.log(`${name} table created successfully`);
-  //         createdTables++;
-  //         if (createdTables === tableDefinitions.length) {
-  //           resolve();
-  //         }
-  //       }
-  //     });
-  //   });
-  // });
 }
 
 
 
 
 
-//Updates user token
-ipcMain.handle("updateUserToken", async (event, token, user_id) => {
-  try {
-    if (!user_id || !token) {
-      throw new Error(
-        "Missing required data (token, user_id) for updateUserToken",
-      );
-    }
-    const result = await db.run(
-      `UPDATE users SET 
-        token = ? WHERE user_id = ?
-      `,
-      [token, user_id],
-    );
 
-    log.info(`Token updated successfully`);
-    return { success: true };
-  } catch (err) {
-    log.error("Error updating token:", err.message);
-    return { error: err.message };
-  }
-});
-
-// Function To Minimize Window
-ipcMain.handle("minimize", () => {
-  mainWindow.minimize();
-});
-
-// Function To Maximize Window
-ipcMain.handle("maximize", () => {
-  if (mainWindow.isMaximized()) {
-    mainWindow.unmaximize();
-  } else {
-    mainWindow.maximize();
-  }
-});
-
-
-
-// Create projects in SQLite database from company database
-ipcMain.handle("create_Projects", async (event, projects) => {
-  try {
-    if (!Array.isArray(projects)) {
-      throw new Error("Invalid data received for create_Projects");
-    }
-
-    // Initialize the database
-    const db = new sqlite3.Database(dbPath, (err) => {
-      if (err) {
-        console.error("Error opening database:", err.message);
-        throw err;
-      }
-    });
-
-    db.serialize(() => {
-      // Delete existing data
-      db.run("DELETE FROM _projects", (err) => {
-        if (err) {
-          console.error("Error deleting old projects:", err.message);
-          throw err;
-        }
-        console.log("Deleted old projects successfully.");
-      });
-
-      // Insert new data
-      const stmt = db.prepare(
-        "INSERT INTO _projects (project_uuid, projectname, start, lang) VALUES (?, ?, ?, ?)"
-      );
-
-      for (const project of projects) {
-        if (!project.project_uuid) {
-          console.error("Skipping project with missing project_uuid:", project);
-          continue;
-        }
-        stmt.run(
-          project.project_uuid,
-          project.projectname,
-          project.start,
-          project.lang,
-          (err) => {
-            if (err) {
-              console.error("Error inserting project:", err.message);
-            }
-          }
-        );
-      }
-
-      stmt.finalize((err) => {
-        if (err) {
-          console.error("Error finalizing statement:", err.message);
-        } else {
-          console.log("All projects added successfully.");
-        }
-      });
-    });
-
-    // Close the database connection
-    db.close((err) => {
-      if (err) {
-        console.error("Error closing database:", err.message);
-      } else {
-        console.log("Database connection closed successfully.");
-      }
-    });
-
-    return { success: true };
-  } catch (err) {
-    console.error("Error adding projects:", err.message);
-    return {
-      statusCode: 0,
-      errorMessage: "Error adding projects to SQLITE _projects",
-    };
-  }
-});
-
-
-
-
-
-//add news to SQLlite news table
-ipcMain.handle("create_news", async (event, news, user_id) => {
-  try {
-    if (!Array.isArray(news)) {
-      throw new Error("Invalid data received for create_news,");
-    }
-    if (!user_id) {
-      throw new Error("Missing user_id for create_news");
-    }
-
-    const db = new sqlite3.Database(dbPath);
-
-    // Fetch all existing news records
-    const existingNews = await new Promise((resolve, reject) => {
-      db.all("SELECT id, updated_at FROM news WHERE user_id = ?", [user_id], (err, rows) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(rows.reduce((acc, row) => {
-            acc[row.id.toString()] = row.updated_at;
-            return acc;
-          }, {}));
-        }
-      });
-    });
-    log.info("Existing news IDs and updated_at:", existingNews);
-
-    const incomingNewsIds = new Set(news.map(item => item.id.toString()));
-  
-    // Identify ids to mark as deleted (those ids that exists in table but not incoming news array)
-    const idsToMarkAsDeleted = Object.keys(existingNews).filter(id => !incomingNewsIds.has(id));
-    // Insert new items (Those that exists in incoming news array but not in table)
-    const newNewsItems = news.filter(item => !existingNews.hasOwnProperty(item.id.toString()));
-    // Update items (those where updated_at in incoming news array are bigger than updated_at in table)
-    const updates = news.filter(item => existingNews.hasOwnProperty(item.id.toString()) && new Date(item.updated_at) > new Date(existingNews[item.id.toString()]));
-
-    // Batch insert new items
-    const batchInsert = async (NewsBatch) => {
-      return new Promise((resolve, reject) => {
-        db.serialize(() => {
-          const stmt = db.prepare(
-            "INSERT INTO news (id, title, content, author, created_at, updated_at, is_read, deleted, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
-          );
-          db.run("BEGIN TRANSACTION");
-          for (const item of NewsBatch) {
-            stmt.run(
-              item.id,
-              item.title,
-              item.content,
-              item.author,
-              item.created_at,
-              item.updated_at,
-              item.isRead ? 1 : 0,
-              item.deleted || 0,
-              user_id
-            );
-          }
-          db.run("COMMIT", (err) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve();
-            }
-          });
-          stmt.finalize();
-        });
-      });
-    };
-    const batchSize = 100;
-    for (let i = 0; i < newNewsItems.length; i += batchSize) {
-      const batch = newNewsItems.slice(i, i + batchSize);
-      await batchInsert(batch);
-    }
-
-     // Update existing items with their is_read status
-     const updateReadStatus = async (newsItem) => {
-      return new Promise((resolve, reject) => {
-        db.run(
-          "UPDATE news SET is_read = ? WHERE id = ? AND user_id = ?",
-          [newsItem.isRead ? 1 : 0, newsItem.id, user_id],
-          (err) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve();
-            }
-          }
-        );
-      });
-    };
-    // Go through each incoming news item and update is_read status
-    for (const newsItem of news) {
-      await updateReadStatus(newsItem);
-    }
-
-    // Batch update existing items
-    const batchUpdate = async (NewsBatch) => {
-      return new Promise((resolve, reject) => {
-        db.serialize(() => {
-          const stmt = db.prepare(
-            "UPDATE news SET title = ?, content = ?, author = ?, created_at = ?, updated_at = ?, is_read = ?, is_sent_date = ?, deleted = ? WHERE id = ? AND user_id = ?"
-          );
-          db.run("BEGIN TRANSACTION");
-          for (const item of NewsBatch) {
-            stmt.run(
-              item.title,
-              item.content,
-              item.author,
-              item.created_at,
-              item.updated_at,
-              0,
-              "NULL",
-              item.deleted || 0, 
-              item.id,
-              user_id
-            );
-          }
-          db.run("COMMIT", (err) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve();
-            }
-          });
-          stmt.finalize();
-        });
-      });
-    };
-    // Update items in batches
-    if (updates.length > 0) {
-      for (let i = 0; i < updates.length; i += batchSize) {
-        const batch = updates.slice(i, i + batchSize);
-        await batchUpdate(batch);
-      }
-      log.info("News items updated successfully");
-    }
-
-    // Mark existing news items as deleted if they are not in the incoming news array
-    if (idsToMarkAsDeleted.length > 0) {
-      await new Promise((resolve, reject) => {
-        db.serialize(() => {
-          const stmt = db.prepare("UPDATE news SET deleted = 1 WHERE id = ? AND user_id = ?");
-          db.run("BEGIN TRANSACTION");
-          for (const id of idsToMarkAsDeleted) {
-            stmt.run(
-              id,
-              user_id
-            );
-          }
-          db.run("COMMIT", (err) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve();
-            }
-          });
-          stmt.finalize();
-        });
-      });
-      log.info("IDs marked as deleted:", idsToMarkAsDeleted);
-    }
-
-    log.info("News added successfully");
-    db.close();
-    return { success: true };
-  } catch (err) {
-    console.error("Error adding news:", err.message);
-    return { statusCode: 0, errorMessage: "Error adding news to SQLITE news" };
-  }
-});
-
-
-
-
-//get all news
-ipcMain.handle("get_news", async (event, user_id) => {
-  log.info("user_id: ", user_id);
-  if (!user_id){
-    throw new Error("Missing user_id for get_news")
-  }
-  const allNews = [];
-
-  const retrieveQuery = "SELECT * FROM news WHERE deleted IS NULL OR deleted != 1 AND user_id = ?";
-  console.log("SQL Query:", retrieveQuery, "Parameters:", []);
-
-  return new Promise((resolve, reject) => {
-    const db = new sqlite3.Database(dbPath);
-
-    db.each(retrieveQuery, [user_id], (error, row) => {
-      if (error != null) {
-        db.close();
-        reject({ statusCode: 0, errorMessage: error });
-      }
-
-      allNews.push({
-        id: row.id,
-        title: row.title,
-        content: row.content,
-        author: row.author,
-        created_at: row.created_at,
-        updated_at: row.updated_at,
-        deleted: row.deleted,
-        is_read: row.is_read,
-        is_sent_date: row.is_sent_date,
-        user_id: user_id
-      });
-    });
-
-    db.close(() => {
-      resolve({ status: 200, news: allNews, message: "success" });
-    });
-  });
-});
-
-
-//confirm news and edit news table
-ipcMain.handle("confirmNewsToSqlite", async (event, news_id, user_id) => {
-  if (!news_id || !user_id) {
-    throw new Error("Missing required data (news_id or user_id) for confirmNewsToSqlite");
-  }
-  try {
-    await db.run(
-      `UPDATE news SET is_read = 1 WHERE id = ? AND user_id = ?
-      `,
-      [news_id, user_id],
-    );
-
-    console.log(`News data updated successfully`);
-    return { status: 200, success: true };
-  } catch (err) {
-    console.error("Error updating confirm news in SQLite:", err.message);
-    return { status: 0, error: err.message };
-  }
-});
-
-//getting all unsent news
-ipcMain.handle("getAllUnsentNews", async (event, user_id) => {
-  if (!user_id) {
-    throw new Error("Missing required data (user_id) for getAllUnsentNews");
-  }
-
-  const retrieveQuery = "SELECT * FROM news WHERE is_read = 1 AND is_sent_date IS NULL AND user_id = ?";
-
-  try {
-    const db = new sqlite3.Database(dbPath);
-
-    const rows = await executeQueryWithRetry(db, retrieveQuery, [user_id]);
-    const unsentNews = rows.map((row) => ({
-      id: row.id
-    }));
-
-    await closeDatabase(db);
-
-    log.info("All unsent news:", unsentNews);
-    return { statusCode: 1, allUnsentNews: unsentNews };
-  } catch (error) {
-    console.error("Error fetching unsent news:", error);
-    return { statusCode: 0, errorMessage: error.message };
-  }
-});
-
-//adding date to news table
-ipcMain.handle("addSentDateToNews", async (event, news_id, user_id) => {
-  try {
-    if (!news_id || !user_id) {
-      throw new Error("Missing required data (news_id or user_id) for addSentDateToNews");
-    }
-
-    await db.run(
-      `
-      UPDATE news
-      SET 
-        is_sent_date = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?
-      `,
-      [news_id, user_id],
-    );
-
-    console.log(`Date added to news table successfully`);
-    return { status: 200, success: true };
-  } catch (err) {
-    console.error("Error adding date to news table:", err.message);
-    return { error: err.message };
-  }
-});
 
 
 
@@ -1407,7 +809,6 @@ async function executeGetWithRetry(
 //get all users
 ipcMain.handle("getAllUsers", async (event, args) => {
   const retrieveQuery = "SELECT * FROM users";
-
   try {
     const users = await new Promise((resolve, reject) => {
       const db = new sqlite3.Database(dbPath);
@@ -1448,14 +849,13 @@ ipcMain.handle("createUser", async (event, args) => {
       throw new Error("Invalid arguments received for createUser");
     }
 
-    const { id, email, firstname, surname, password, language, token } = args;
-    console.log("id", id)
+    const { username, password } = args;
 
-    if (!id || !email || !firstname || !surname || !language || !token || !password) {
+    if (!username || !password) {
       throw new Error("Missing required user data for createUser");
     }
 
-    const userExists = await checkUserIdDatabase(email);
+    const userExists = await checkUserIdDatabase(username);
     if (userExists) {
       return { success: false, error: "User already exists" };
     } else {
@@ -1465,19 +865,17 @@ ipcMain.handle("createUser", async (event, args) => {
       // Insert the new user into the database
       await db.run(
         `
-        INSERT INTO users (user_id, email, firstname, lastname, password, lang, token)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO users (email, password)
+        VALUES (?, ?)
         `,
-        [id, email, firstname, surname, hashedPassword, language, token],
+        [username, hashedPassword],
       );
 
       console.log("User added successfully");
-      // event.sender.send("createUser-response", { success: true });
       return { success: true };
     }
   } catch (err) {
     console.error("Error adding new user data:", err.message);
-    // event.sender.send("createUser-response", { error: err.message });
     return { error: err.message };
   }
 });
@@ -1524,8 +922,7 @@ ipcMain.handle("loginUser", async (event, args) => {
       return { status: 202, success: false, message: "User with email not found in local database" };
     }
 
-    if (hashedPassword && (await verifyGlobalPassword(password, hashedPassword))) {
-    // if (hashedPassword && (await comparePassword(password, hashedPassword))) {
+    if (hashedPassword && (await comparePassword(password, hashedPassword))) {
       // If the user exists and the password matches, send success response
       const user = await getUserDetails(email);
       log.info(user);
@@ -1560,7 +957,7 @@ const getUserHashedPassword = (email) => {
 };
 const getUserDetails = (email) => {
   return new Promise((resolve, reject) => {
-    const query = `SELECT user_id, email, firstname, lastname, lang, mobile, city, created, token FROM users WHERE email = ?`;
+    const query = `SELECT user_id, email, firstname, lastname, mobile, city, created, token FROM users WHERE email = ?`;
     db.get(query, [email], (err, row) => {
       if (err) {
         console.error("Error fetching user details from database:", err);
@@ -1573,21 +970,15 @@ const getUserDetails = (email) => {
     });
   });
 };
-// Verify the user input password with the hashed password from global database from /login response
-const verifyGlobalPassword = async (password, hash) => {
-  hash = hash.replace(/^\$2y(.+)$/i, '$2a$1');
-  const match = await bcrypt.compare(password, hash);
-  return match; // return true if match otherwise false
-}
+const comparePassword = (password, hash) => {
+  try {
+    return bcrypt.compare(password, hash);
+  } catch (error) {
+    console.error("Comparison error:", error);
+    return false;
+  }
+};
 
-// const comparePassword = (password, hash) => {
-//   try {
-//     return bcrypt.compare(password, hash);
-//   } catch (error) {
-//     console.error("Comparison error:", error);
-//     return false;
-//   }
-// };
 
 
 // Check if user exists  by email
@@ -1606,8 +997,6 @@ ipcMain.handle("findUserByEmail", async (event, email) => {
     });
   });
 });
-
-
 
 
 //edit user data
@@ -1642,2635 +1031,615 @@ ipcMain.handle("editUser", async (event, args) => {
 
 
 
-// Add new password in local db if not matches with global database password
-ipcMain.handle("verifyGlobalWithLocalPassword", async (event, email, user_id, password, hashPassword) => {
-  console.log("email", email)
-  console.log("user_id",user_id )
-  console.log("password", password)
-  console.log("hashPassword", hashPassword)
+// LISTS
 
-  if (!email || !user_id || !password || !hashPassword) { throw new Error("Missing required data for verifyGlobalPassword")}
 
-  try { 
-      // Step 1: get user password by user_id/eamil
-      const hashedUserLocalPassword = await getUserHashedPassword(email);
-      if (!hashedUserLocalPassword) {
-        return { status: 404, success: false, message: "User with email not found in local database" };
-      }
-      // // Step 2. Verify global user passwords
-      // const passwordMatches = await verifyGlobalPassword(password, hashedUserLocalPassword);
-      // if (!passwordMatches) {
-      //   return { status: 401, success: false, message: "Invalid password, password does not match with hashed_password in local database" };
-      // }
-      const query = await db.run(
-        `UPDATE users SET 
-          password = ? WHERE user_id = ?
-        `,
-        [hashPassword, user_id],
-      );
-      console.log(`Password updated successfully for user_id`)
-      log.info(`Password updated successfully for user_id: ${user_id}`);
-      return { success: true, status: 200, result: query, message: "New password hashed and updated succesfully in local database" };
-  } catch (error) {
-      log.info(`Error when updating user table with new password`);
-      return { success: false, status: 500, message: "Error when updating user table with new password", error };
-  } 
-})
-
-
-
-
-
-// PROJECTS
-
-
-//get all current projects by user_id
-ipcMain.handle("getAllProjects", async (event, user_id) => {
-  const retrieveQuery =
-    "SELECT * FROM projects WHERE user_id = ? AND files_uploaded = 0 AND is_deleted = 0";
-  console.log("SQL Query:", retrieveQuery, "Parameters:", [user_id]);
-
-  const db = new sqlite3.Database(dbPath);
-
-  try {
-    const rows = await executeQueryWithRetry(db, retrieveQuery, [user_id]);
-
-    const allProjects = rows.map((row) => ({
-      project_id: row.project_id,
-      project_uuid: row.project_uuid,
-      projectname: row.projectname,
-      type: row.type,
-      anomaly: row.anomaly,
-      merged_teams: row.merged_teams,
-      unit: row.unit,
-      lang: row.lang,
-      alert_sale: row.alert_sale,
-      is_deleted: row.is_deleted,
-      is_sent: row.is_sent,
-      sent_date: row.sent_date,
-      user_id: row.user_id,
-      project_date: row.project_date,
-      created: row.created,
-    }));
-
-    await closeDatabase(db);
-    return { statusCode: 1, projects: allProjects };
-  } catch (error) {
-    await closeDatabase(db);
-    console.error("Error fetching projects (getAllProjects):", error);
-    return { statusCode: 0, errorMessage: error.message };
-  }
-});
-
-
-//get all current projects by user_id
-ipcMain.handle("getAllCurrentProjects", async (event, user_id) => {
-  const retrieveQuery =
-    "SELECT * FROM projects WHERE user_id = ? AND is_sent = 0 AND is_deleted = 0";
-  console.log("SQL Query:", retrieveQuery, "Parameters:", [user_id]);
-
-  const db = new sqlite3.Database(dbPath);
-
-  try {
-    const rows = await executeQueryWithRetry(db, retrieveQuery, [user_id]);
-
-    const allProjects = rows.map((row) => ({
-      project_id: row.project_id,
-      project_uuid: row.project_uuid,
-      projectname: row.projectname,
-      project_date: row.project_date,
-      type: row.type,
-      anomaly: row.anomaly,
-      merged_teams: row.merged_teams,
-      unit: row.unit,
-      alert_sale: row.alert_sale,
-      is_deleted: row.is_deleted,
-      is_sent: row.is_sent,
-      sent_date: row.sent_date,
-      user_id: row.user_id,
-      project_date: row.project_date,
-      created: row.created,
-    }));
-
-    await closeDatabase(db);
-    return { statusCode: 1, projects: allProjects };
-  } catch (error) {
-    await closeDatabase(db);
-    console.error("Error fetching projects (getAllCurrentProjects):", error);
-    return { statusCode: 0, errorMessage: error.message };
-  }
-});
-// ipcMain.handle("getAllCurrentProjects", async (event, user_id) => {
-//   const retrieveQuery =
-//     "SELECT * FROM projects WHERE user_id = ? AND is_sent = 0 AND is_deleted = 0";
-//   console.log("SQL Query:", retrieveQuery, "Parameters:", [user_id]);
-
-//   try {
-//     const projects = await new Promise((resolve, reject) => {
-//       const db = new sqlite3.Database(dbPath);
-
-//       db.all(retrieveQuery, [user_id], (error, rows) => {
-//         if (error != null) {
-//           db.close();
-//           reject({ statusCode: 0, errorMessage: error });
-//         }
-
-//         const allProjects = rows.map((row) => ({
-//           project_id: row.project_id,
-//           project_uuid: row.project_uuid,
-//           projectname: row.projectname,
-//           type: row.type,
-//           anomaly: row.anomaly,
-//           merged_teams: row.merged_teams,
-//           unit: row.unit,
-//           alert_sale: row.alert_sale,
-//           is_deleted: row.is_deleted,
-//           is_sent: row.is_sent,
-//           sent_date: row.sent_date,
-//           user_id: row.user_id,
-//           project_date: row.project_date,
-//           created: row.created,
-//         }));
-
-//         db.close(() => {
-//           resolve({ statusCode: 1, projects: allProjects });
-//         });
-//       });
-//     });
-
-//     return projects;
-//   } catch (error) {
-//     console.error("Error fetching projects (getAllCurrentProjects):", error);
-//     return { statusCode: 0, errorMessage: error.message };
-//   }
-// });
-
-//get all previous projects by user_id
-ipcMain.handle("getAllPreviousProjects", async (event, user_id) => {
-  const retrieveQuery =
-    "SELECT * FROM projects WHERE user_id = ? AND is_sent = 1 AND is_deleted = 0";
-  console.log("SQL Query:", retrieveQuery, "Parameters:", [user_id]);
-
-  const db = new sqlite3.Database(dbPath);
-
-  try {
-    const rows = await executeQueryWithRetry(db, retrieveQuery, [user_id]);
-
-    const allProjects = rows.map((row) => ({
-      project_id: row.project_id,
-      project_uuid: row.project_uuid,
-      projectname: row.projectname,
-      project_date: row.project_date,
-      type: row.type,
-      anomaly: row.anomaly,
-      merged_teams: row.merged_teams,
-      unit: row.unit,
-      alert_sale: row.alert_sale,
-      is_deleted: row.is_deleted,
-      is_sent: row.is_sent,
-      sent_date: row.sent_date,
-      user_id: row.user_id,
-      created: row.created,
-    }));
-
-    await closeDatabase(db);
-    return { statusCode: 1, projects: allProjects };
-  } catch (error) {
-    await closeDatabase(db);
-    console.error("Error fetching projects (getAllPreviousProjects):", error);
-    return { statusCode: 0, errorMessage: error.message };
-  }
-});
-// ipcMain.handle("getAllPreviousProjects", async (event, user_id) => {
-//   const retrieveQuery =
-//     "SELECT * FROM projects WHERE user_id = ? AND is_sent = 1 AND is_deleted = 0";
-//   console.log("SQL Query:", retrieveQuery, "Parameters:", [user_id]);
-
-//   try {
-//     const projects = await new Promise((resolve, reject) => {
-//       const db = new sqlite3.Database(dbPath);
-
-//       db.all(retrieveQuery, [user_id], (error, rows) => {
-//         if (error != null) {
-//           db.close();
-//           reject({ statusCode: 0, errorMessage: error });
-//         }
-
-//         const allProjects = rows.map((row) => ({
-//           project_id: row.project_id,
-//           project_uuid: row.project_uuid,
-//           projectname: row.projectname,
-//           type: row.type,
-//           anomaly: row.anomaly,
-//           merged_teams: row.merged_teams,
-//           unit: row.unit,
-//           alert_sale: row.alert_sale,
-//           is_deleted: row.is_deleted,
-//           is_sent: row.is_sent,
-//           sent_date: row.sent_date,
-//           user_id: row.user_id,
-//           created: row.created,
-//         }));
-
-//         db.close(() => {
-//           resolve({ statusCode: 1, projects: allProjects });
-//         });
-//       });
-//     });
-
-//     return projects;
-//   } catch (error) {
-//     console.error("Error fetching projects (getAllPreviousProjects):", error);
-//     return { statusCode: 0, errorMessage: error.message };
-//   }
-// });
-
-//get all previous projects by user_id
-ipcMain.handle(
-  "getAllPreviousProjectsBySearch",
-  async (event, user_id, searchString) => {
-    const retrieveQuery =
-      "SELECT * FROM projects WHERE user_id = ? AND is_sent = 1 AND is_deleted = 0 AND projectname LIKE ?";
-    console.log("SQL Query:", retrieveQuery, "Parameters:", [
-      user_id,
-      `%${searchString}%`,
-    ]);
-
-    try {
-      const projects = await new Promise((resolve, reject) => {
-        const db = new sqlite3.Database(dbPath);
-
-        db.all(retrieveQuery, [user_id, `%${searchString}%`], (error, rows) => {
-          if (error != null) {
-            db.close();
-            reject({ statusCode: 0, errorMessage: error });
-          }
-
-          const allProjects = rows.map((row) => ({
-            project_id: row.project_id,
-            project_uuid: row.project_uuid,
-            projectname: row.projectname,
-            type: row.type,
-            anomaly: row.anomaly,
-            merged_teams: row.merged_teams,
-            unit: row.unit,
-            alert_sale: row.alert_sale,
-            is_deleted: row.is_deleted,
-            is_sent: row.is_sent,
-            sent_date: row.sent_date,
-            user_id: row.user_id,
-            created: row.created,
-          }));
-
-          db.close(() => {
-            resolve({ statusCode: 1, projects: allProjects });
-          });
-        });
-      });
-
-      return projects;
-    } catch (error) {
-      console.error("Error fetching searched projects:", error);
-      return { statusCode: 0, errorMessage: error.message };
-    }
-  },
-);
-
-//get project by porject_id
-ipcMain.handle("getProjectById", async (event, project_id) => {
-  const retrieveQuery = "SELECT * FROM projects WHERE project_id = ?";
-  console.log("SQL Query:", retrieveQuery, "Parameters:", [project_id]);
-
-  const db = new sqlite3.Database(dbPath);
-
-  try {
-    const row = await executeGetWithRetry(db, retrieveQuery, [project_id]);
-
-    if (!row) {
-      await closeDatabase(db);
-      return { statusCode: 1, project: null };
-    }
-
-    const project = {
-      project_id: row.project_id,
-      project_uuid: row.project_uuid,
-      projectname: row.projectname,
-      photographername: row.photographername,
-      type: row.type,
-      anomaly: row.anomaly,
-      merged_teams: row.merged_teams,
-      unit: row.unit,
-      alert_sale: row.alert_sale,
-      is_deleted: row.is_deleted,
-      is_sent: row.is_sent,
-      sent_date: row.sent_date,
-      user_id: row.user_id,
-      created: row.created,
-    };
-
-    await closeDatabase(db);
-    return { status: 200, statusCode: 1, project: project };
-  } catch (error) {
-    await closeDatabase(db);
-    console.error("Error fetching projects (getProjectById):", error);
-    return { status: 400, statusCode: 0, errorMessage: error.message };
-  }
-});
-// ipcMain.handle("getProjectById", async (event, project_id) => {
-//   const retrieveQuery = "SELECT * FROM projects WHERE project_id = ?";
-//   console.log("SQL Query:", retrieveQuery, "Parameters:", [project_id]);
-
-//   try {
-//     const project = await new Promise((resolve, reject) => {
-//       const db = new sqlite3.Database(dbPath);
-
-//       db.get(retrieveQuery, [project_id], (error, row) => {
-//         if (error != null) {
-//           db.close();
-//           reject({ statusCode: 0, errorMessage: error });
-//         }
-
-//         if (!row) {
-//           // If no project is found, resolve with null
-//           db.close();
-//           resolve({ statusCode: 1, project: null });
-//           return;
-//         }
-
-//         const project = {
-//           project_id: row.project_id,
-//           project_uuid: row.project_uuid,
-//           projectname: row.projectname,
-//           photographername: row.photographername,
-//           type: row.type,
-//           anomaly: row.anomaly,
-//           merged_teams: row.merged_teams,
-//           unit: row.unit,
-//           alert_sale: row.alert_sale,
-//           is_deleted: row.is_deleted,
-//           is_sent: row.is_sent,
-//           sent_date: row.sent_date,
-//           user_id: row.user_id,
-//           created: row.created,
-//         };
-
-//         db.close(() => {
-//           resolve({ statusCode: 1, project: project });
-//         });
-//       });
-//     });
-
-//     return project;
-//   } catch (error) {
-//     console.error("Error fetching projects (getProjectById):", error);
-//     return { statusCode: 0, errorMessage: error.message };
-//   }
-// });
-
-//get all projects
-ipcMain.handle("get_Projects", async (event, user_lang) => {
-  const allProjects = [];
-
-  const retrieveQuery = "SELECT * FROM _projects WHERE lang = ?";
-  console.log("SQL Query:", retrieveQuery, "Parameters:", [user_lang]);
-
-  return new Promise((resolve, reject) => {
-    const db = new sqlite3.Database(dbPath);
-
-    db.each(retrieveQuery, [user_lang], (error, row) => {
-      if (error != null) {
-        db.close();
-        reject({ statusCode: 0, errorMessage: error });
-      }
-
-      allProjects.push({
-        project_uuid: row.project_uuid,
-        projectname: row.projectname,
-        lang: row.lang,
-        project_date: row.start,
-      });
-    });
-
-    db.close(() => {
-      resolve({ statusCode: 1, projects: allProjects });
-    });
-  });
-});
-
-//get spcific project and see if it exists
-ipcMain.handle("checkProjectExists", async (event, project_uuid, user_id) => {
-  const retrieveQuery =
-    "SELECT * FROM projects WHERE project_uuid = ? AND user_id = ? AND is_deleted = 0";
-
-  try {
-    const project = await new Promise((resolve, reject) => {
-      const db = new sqlite3.Database(dbPath);
-
-      db.get(retrieveQuery, [project_uuid, user_id], (error, row) => {
-        if (error) {
-          db.close();
-          reject({ statusCode: 0, errorMessage: error.message });
-        } else if (!row) {
-          db.close();
-          reject({ statusCode: 0, errorMessage: "Project not found" });
-        } else {
-          db.close();
-          resolve({
-            statusCode: 1,
-            project_uuid: row.project_uuid,
-            projectname: row.projectname,
-            // Add other project details if needed
-          });
-        }
-      });
-    });
-
-    return project;
-  } catch (error) {
-    console.error("Error checking project existence:", error);
-    return { statusCode: 0, errorMessage: error.message };
-  }
-});
-
-const executeInsertWithRetryAndId = (
-  db,
-  query,
-  params = [],
-  retries = 5,
-  delay = 1000,
-) => {
-  return new Promise((resolve, reject) => {
-    function attempt() {
-      db.run(query, params, function (error) {
-        if (error) {
-          if (error.code === "SQLITE_BUSY" && retries > 0) {
-            setTimeout(() => {
-              attempt(--retries); // Decrement retries and try again
-            }, delay);
-          } else {
-            reject(error);
-          }
-        } else {
-          resolve(this.lastID); // Retrieve the last inserted row ID
-        }
-      });
-    }
-    attempt();
-  });
-};
-
-//create new project
-ipcMain.handle("createNewProject", async (event, args) => {
+//create new user
+ipcMain.handle("createNewList", async (event, args) => {
   try {
     if (!args || typeof args !== "object") {
-      throw new Error("Invalid arguments received for createNewProject");
+      throw new Error("Invalid arguments received for createNewList");
     }
 
-    const {
-      projectname,
-      type,
-      user_id,
-      project_uuid,
-      photographername,
-      project_date,
-      lang,
-    } = args;
+    const { newListName, selectedColor, user_id } = args;
 
-    if (
-      !projectname ||
-      !type ||
-      !project_uuid ||
-      !user_id ||
-      !photographername ||
-      !project_date ||
-      !lang
-    ) {
-      throw new Error("Missing required user data for createNewProject");
+    if (!newListName || !selectedColor || !user_id) {
+      throw new Error("Missing required user data for createNewList");
     }
-
-    const db = new sqlite3.Database(dbPath);
-
-    const project_id = await executeInsertWithRetryAndId(
-      db,
+    // Insert the new user into the database
+    await db.run(
       `
-        INSERT INTO projects (projectname, photographername, type, project_date, user_id, lang, project_uuid)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO lists (name, color, user_id)
+      VALUES (?, ?, ?)
       `,
-      [
-        projectname.toLowerCase(),
-        photographername,
-        type.toLowerCase(),
-        project_date,
-        user_id,
-        lang,
-        project_uuid,
-      ],
+      [newListName, selectedColor, user_id],
     );
-
-    log.info("Project added successfully with project_id:", project_id);
-
-    return { success: true, project_id };
+    console.log("List added successfully");
+    return { success: true, status: 201, message: "New list inserted successfully" };
+    
   } catch (err) {
-    console.error(
-      "Error adding new project data (createNewProject):",
-      err.message,
-    );
+    console.error("Error adding list:", err.message);
     return { error: err.message };
   }
 });
-// ipcMain.handle("createNewProject", async (event, args) => {
-//   try {
-//     if (!args || typeof args !== "object") {
-//       throw new Error("Invalid arguments received for createNewProject");
-//     }
 
-//     const {
-//       projectname,
-//       type,
-//       user_id,
-//       project_uuid,
-//       photographername,
-//       project_date,
-//       lang,
-//     } = args;
 
-//     if (
-//       !projectname ||
-//       !type ||
-//       !project_uuid ||
-//       !user_id ||
-//       !photographername ||
-//       !project_date ||
-//       !lang
-//     ) {
-//       throw new Error("Missing required user data for createNewProject");
-//     }
-
-//     await db.run(
-//       `
-//           INSERT INTO projects (projectname, photographername, type, project_date, user_id, lang, project_uuid)
-//           VALUES (?, ?, ?, ?, ?, ?, ?)
-//           `,
-//       [
-//         projectname.toLowerCase(),
-//         photographername,
-//         type.toLowerCase(),
-//         project_date,
-//         user_id,
-//         lang,
-//         project_uuid,
-//       ],
-//     );
-
-//     log.info("Project added successfully");
-//     log.info("Fetching new project with UUID:", project_uuid);
-//     // Send the newProject object as a response to the frontend
-//     event.sender.send("createNewProject-response", { success: true });
-//     return { success: true }; // Optionally, also return the newProject object
-//   } catch (err) {
-//     console.error("Error adding new project data:", err.message);
-//     event.sender.send("createNewProject-response", { error: err.message });
-//     return { error: err.message };
-//   }
-// });
-
-//get latest project
-// ipcMain.handle("getLatestProject", async (event, user_id, project_uuid) => {
-//   const retrieveQuery = "SELECT project_id FROM projects WHERE user_id = ? AND project_uuid = ?";
-
-//   log.info("SQL Query:", retrieveQuery, "Parameters:", [user_id, project_uuid]);
-
-//   try {
-//     const db = new sqlite3.Database(dbPath);
-
-//     const row = await executeQueryWithRetry(db, retrieveQuery, [user_id, project_uuid]);
-
-//     if (!row) {
-//       log.info("Project not found (getLatestProject)");
-//       return { statusCode: 0, errorMessage: "Project not found" };
-//     }
-
-//     log.info("Project found (getLatestProject):", row);
-
-//     return {
-//       statusCode: 1,
-//       project_id: row.project_id
-//     };
-//   } catch (error) {
-//     log.info("Error fetching project data (getLatestProject):", error);
-//     return { statusCode: 0, errorMessage: error.message };
-//   }
-// });
-ipcMain.handle("getLatestProject", async (event, user_id, project_uuid) => {
-  const retrieveQuery =
-    "SELECT * FROM projects WHERE user_id = ? AND project_uuid = ?";
-
+//get all lists by user_id
+ipcMain.handle("getAllLists", async (event, user_id) => {
+  const query = "SELECT * FROM lists WHERE user_id = ? AND is_deleted = 0 AND archived = 0";
   try {
-    const project = await new Promise((resolve, reject) => {
+    const lists = await new Promise((resolve, reject) => {
       const db = new sqlite3.Database(dbPath);
 
-      db.get(retrieveQuery, [user_id, project_uuid], (error, row) => {
-        if (error) {
+      db.all(query, [user_id], (error, rows) => {
+        if (error != null) {
           db.close();
-          reject({ statusCode: 0, errorMessage: error });
-        } else if (!row) {
-          db.close();
-          reject({ statusCode: 0, errorMessage: "Project not found" });
-        } else {
-          db.close();
-          resolve({
-            statusCode: 1,
-            project_id: row.project_id,
+          reject({ statusCode: 400, errorMessage: error });
+        }
+
+        const lists = rows.map((row) => ({
+          list_id: row.list_id,
+          name: row.name,
+          color: row.color,
+          is_deleted: row.is_deleted,
+          created: row.created,
+          user_id: row.user_id,
+        }));
+
+        resolve({ status: 200, lists: lists });
+      });
+    });
+    return lists;
+    // return { statusCode: 200, lists: lists }; 
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+    return { statusCode: 500, errorMessage: error.message || "Internal Server Error" };
+  }
+});
+
+// Get list by list id
+ipcMain.handle("getListById", async (event, list_id, user_id) => {
+  const query = "SELECT * FROM lists WHERE list_id = ? AND user_id = ? AND is_deleted = 0";
+
+  try {
+    const list = await new Promise((resolve, reject) => {
+      const db = new sqlite3.Database(dbPath);
+      db.get(query, [list_id, user_id], (error, row) => {
+        db.close();
+        if (error) reject({ statusCode: 400, errorMessage: error });
+        resolve({ statusCode: 200, list: row });
+      });
+    });
+
+    return list;
+  } catch (error) {
+    return { statusCode: 0, errorMessage: error.message };
+  }
+});
+
+
+// delete list
+ipcMain.handle('deleteList', async (event, listId, user_id) => {
+  log.info(listId);
+  if (!user_id || !listId) {
+      throw new Error("Missing required user data for deleteList");
+  }
+
+  const query = 'UPDATE lists SET is_deleted = 1 WHERE user_id = ? AND list_id = ?';
+
+  try {
+      const result = await new Promise((resolve, reject) => {
+          db.run(query, [user_id, listId], (error, results) => {
+              if (error) {
+                  console.error('Error updating task:', error);
+                  reject(error);
+              } else {
+                  resolve(results);
+              }
           });
-        }
       });
-    });
 
-    return project;
+      return { status: 200, list_id: listId, message: 'List deleted successfully' };
   } catch (error) {
-    console.error("Error fetching project data:", error);
-    return { statusCode: 0, errorMessage: error.message };
+      console.error('Error in deleteList:', error);
+      return { status: 500, message: 'Failed to deleted list' };
   }
 });
 
-//delete project
-ipcMain.handle("deleteProject", async (event, project_id, user_id) => {
-  const updateQuery = "UPDATE projects SET is_deleted = 1 WHERE project_id = ? AND user_id = ?";
 
+// Set list as archive
+ipcMain.handle('setListAsArchived', async (event, args) => {
+  
+  if (!args || typeof args !== "object") {
+    throw new Error("Invalid arguments received for setListAsArchived");
+  }
+  const { user_id, list_id } = args;
+  const query = 'UPDATE lists SET archived = 1, archived_date = CURRENT_TIMESTAMP WHERE user_id = ? AND list_id = ?';
   try {
-    const result = await new Promise((resolve, reject) => {
+      const result = await new Promise((resolve, reject) => {
+          db.run(query, [user_id, list_id], (error, results) => {
+              if (error) {
+                  console.error('Error updating lists:', error);
+                  reject(error);
+              } else {
+                  resolve(results);
+              }
+          });
+      });
+      
+    return { status: 200, list_id: list_id, message: 'List updated to archived successfully' };
+  } catch (error) {
+      console.error('Error in setListAsArchived:', error);
+      return { status: 500, message: 'Failed to set list to archived' };
+  }
+});
+
+
+//get all archived lists by user_id
+ipcMain.handle("getArchivedLists", async (event, user_id) => {
+  if (!user_id) {throw new Error("Missing user_id for getArchivedLists")}
+  const query = "SELECT * FROM lists WHERE user_id = ? AND is_deleted = 0 AND archived = 1";
+  try {
+    const lists = await new Promise((resolve, reject) => {
       const db = new sqlite3.Database(dbPath);
 
-      db.run(updateQuery, [project_id, user_id], function (error) {
+      db.all(query, [user_id], (error, rows) => {
         if (error) {
-          db.close();
-          reject({ status: 400, statusCode: 0, errorMessage: error });
-        } else {
-          db.close();
-          resolve({ status: 200, rowsAffected: this.changes });
-        }
-      });
-    });
-
-    return { statusCode: 1, result };
-  } catch (error) {
-    console.error("Error deleting project:", error);
-    return { statusCode: 0, errorMessage: error.message };
-  }
-});
-
-//send project to DB
-ipcMain.handle(
-  "sendProjectToDb",
-  async (event, project_id, alertSale, responseId) => {
-    const updateQuery = `
-    UPDATE projects 
-    SET is_sent = 1, 
-        sent_date = CURRENT_TIMESTAMP, 
-        alert_sale = ?, 
-        is_sent_id = ? 
-    WHERE project_id = ?
-  `;
-
-    try {
-      const db = new sqlite3.Database(dbPath);
-      const params = [alertSale, responseId, project_id];
-
-      const result = await executeUpdateWithRetry(db, updateQuery, params);
-      console.log("Project sent to DB successfully");
-
-      await closeDatabase(db);
-
-      return { status: 200, statusCode: 1, result };
-    } catch (error) {
-      console.error("Error sending project to db:", error);
-      return { statusCode: 0, errorMessage: error.message };
-    }
-  },
-);
-// ipcMain.handle(
-//   "sendProjectToDb",
-//   async (event, project_id, alertSale, responseId) => {
-//     const updateQuery =
-//       "UPDATE projects SET is_sent = 1, sent_date = CURRENT_TIMESTAMP, alert_sale = ?, is_sent_id = ? WHERE project_id = ?";
-
-//     try {
-//       const result = await new Promise((resolve, reject) => {
-//         const db = new sqlite3.Database(dbPath);
-
-//         db.run(
-//           updateQuery,
-//           [alertSale, responseId, project_id],
-//           function (error) {
-//             if (error) {
-//               db.close();
-//               reject({ statusCode: 0, errorMessage: error });
-//             } else {
-//               db.close();
-//               resolve({ rowsAffected: this.changes });
-//             }
-//           },
-//         );
-//       });
-
-//       return { statusCode: 1, result };
-//     } catch (error) {
-//       log.info("Error sending project to db:", error);
-//       return { statusCode: 0, errorMessage: error.message };
-//     }
-//   },
-// );
-
-//create new team
-ipcMain.handle("createNewTeam", async (event, args) => {
-  try {
-    if (!args || typeof args !== "object") {
-      throw new Error("Invalid arguments received for createNewTeam");
-    }
-
-    const {
-      teamname,
-      leader_firstname,
-      leader_lastname,
-      leader_mobile,
-      leader_email,
-      calendar_amount,
-      leader_address,
-      leader_postalcode,
-      leader_county,
-      leader_ssn,
-      project_id,
-    } = args;
-
-    if (
-      !teamname ||
-      !leader_firstname ||
-      !leader_lastname ||
-      !leader_mobile ||
-      !leader_email ||
-      !project_id
-    ) {
-      throw new Error("Missing required data for createNewTeam");
-    }
-
-    const result = await db.run(
-      `
-          INSERT INTO teams (
-              teamname, leader_firstname, leader_lastname, leader_mobile, leader_email, calendar_amount, leader_address, leader_postalcode, leader_county, leader_ssn, project_id
-          )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-          `,
-      [
-        teamname,
-        leader_firstname,
-        leader_lastname,
-        leader_mobile,
-        leader_email,
-        calendar_amount,
-        leader_address,
-        leader_postalcode,
-        leader_county,
-        leader_ssn,
-        project_id,
-      ],
-    );
-
-    console.log(`Team added successfully`);
-
-    // event.sender.send("createNewTeam-response", {
-    //   success: true,
-    //   statusCode: 1,
-    // });
-    return { success: true, statusCode: 1 };
-  } catch (err) {
-    console.error("Error adding new team:", err.message);
-    // event.sender.send("createNewTeam-response", { error: err.message });
-    return { error: err.message };
-  }
-});
-
-//get all teams by project_id
-ipcMain.handle("getTeamsByProjectId", async (event, project_id) => {
-  const retrieveQuery =
-    "SELECT * FROM teams WHERE is_deleted = 0 AND project_id = ?";
-  console.log("SQL Query:", retrieveQuery, "Parameters:", [project_id]);
-
-  const db = new sqlite3.Database(dbPath);
-
-  try {
-    const rows = await executeQueryWithRetry(db, retrieveQuery, [project_id]);
-
-    const allTeams = rows.map((row) => ({
-      team_id: row.team_id,
-      teamname: row.teamname,
-      amount: row.amount,
-      leader_firstname: row.leader_firstname,
-      leader_lastname: row.leader_lastname,
-      leader_address: row.leader_address,
-      leader_postalcode: row.leader_postalcode,
-      leader_county: row.leader_county,
-      leader_mobile: row.leader_mobile,
-      leader_email: row.leader_email,
-      leader_ssn: row.leader_ssn,
-      portrait: row.portrait,
-      crowd: row.crowd,
-      reason_not_portrait: row.reason_not_portrait,
-      protected_id: row.protected_id,
-      named_photolink: row.named_photolink,
-      sold_calendar: row.sold_calendar,
-      calendar_amount: row.calendar_amount,
-      created: row.created,
-      project_id: row.project_id,
-    }));
-
-    await closeDatabase(db);
-    return { statusCode: 1, teams: allTeams };
-  } catch (error) {
-    await closeDatabase(db);
-    console.error("Error fetching projects (getTeamsByProjectId):", error);
-    return { statusCode: 0, errorMessage: error.message };
-  }
-});
-
-async function executeQueryWithRetry(
-  db,
-  query,
-  params = [],
-  retries = 5,
-  delay = 1000,
-) {
-  return new Promise((resolve, reject) => {
-    function attempt() {
-      db.all(query, params, (error, rows) => {
-        if (error) {
-          log.info(
-            `Error executing query: ${query}, params: ${params}, retries left: ${retries}`,
-          );
-          if (error.code === "SQLITE_BUSY" && retries > 0) {
-            log.info(`Retrying query after ${delay}ms`);
-            setTimeout(attempt, delay);
-          } else {
-            reject(error);
-          }
+          console.error("Error fetching archived lists:", error);
+          reject({ statusCode: 400, errorMessage: error });
         } else {
           resolve(rows);
         }
       });
-    }
-    attempt();
-  });
-}
-
-function closeDatabase(db) {
-  return new Promise((resolve, reject) => {
-    db.close((error) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve();
-      }
     });
-  });
-}
-// ipcMain.handle("getTeamsByProjectId", async (event, project_id) => {
-//   const retrieveQuery =
-//     "SELECT * FROM teams WHERE is_deleted = 0 AND project_id = ?";
-//   console.log("SQL Query:", retrieveQuery, "Parameters:", [project_id]);
+    return { status: 200, lists: lists };
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+    return { statusCode: 500, errorMessage: error.message || "Internal Server Error" };
+  }
+});
 
-//   try {
-//     const teams = await new Promise((resolve, reject) => {
-//       const db = new sqlite3.Database(dbPath);
 
-//       db.all(retrieveQuery, [project_id], (error, rows) => {
-//         if (error != null) {
-//           db.close();
-//           reject({ statusCode: 0, errorMessage: error });
-//         }
 
-//         const allTeams = rows.map((row) => ({
-//           team_id: row.team_id,
-//           teamname: row.teamname,
-//           amount: row.amount,
-//           leader_firstname: row.leader_firstname,
-//           leader_lastname: row.leader_lastname,
-//           leader_address: row.leader_address,
-//           leader_postalcode: row.leader_postalcode,
-//           leader_county: row.leader_county,
-//           leader_mobile: row.leader_mobile,
-//           leader_email: row.leader_email,
-//           leader_ssn: row.leader_ssn,
-//           portrait: row.portrait,
-//           crowd: row.crowd,
-//           protected_id: row.protected_id,
-//           named_photolink: row.named_photolink,
-//           sold_calendar: row.sold_calendar,
-//           calendar_amount: row.calendar_amount,
-//           created: row.created,
-//           project_id: row.project_id,
-//         }));
 
-//         db.close(() => {
-//           resolve({ statusCode: 1, teams: allTeams });
-//         });
-//       });
-//     });
 
-//     return teams;
-//   } catch (error) {
-//     console.error("Error fetching projects (getTeamsByProjectId):", error);
-//     return { statusCode: 0, errorMessage: error.message };
-//   }
-// });
 
-//Update team
-ipcMain.handle("addDataToTeam", async (event, args) => {
+// TASKS
+
+//create new user
+ipcMain.handle("createNewTask", async (event, args) => {
   try {
     if (!args || typeof args !== "object") {
-      throw new Error("Invalid arguments received for addDataToTeam");
-    }
-    const {
-      leader_address, leader_postalcode, leader_county, leader_ssn, calendar_amount, team_id, } = args;
-
-    if ( !leader_address || !leader_postalcode || !leader_county || !leader_ssn || !calendar_amount || !team_id) {
-      throw new Error("Missing required data for addDataToTeam");
+      throw new Error("Invalid arguments received for createNewTask");
     }
 
-    const result = await db.run(
+    const { title, description, due_date, user_id, list_id } = args;
+
+    if (!title || !user_id || !list_id) {
+      throw new Error("Missing required user data for createNewTask");
+    }
+    // Insert the new user into the database
+    await db.run(
       `
-          UPDATE teams
-          SET leader_address = ?,
-              calendar_amount = ?,  
-              leader_postalcode = ?,
-              leader_county = ?,
-              leader_ssn = ?
-          WHERE team_id = ?
-          `,
-      [
-        leader_address,
-        calendar_amount,
-        leader_postalcode,
-        leader_county,
-        leader_ssn,
-        team_id,
-      ],
+      INSERT INTO tasks (title, description, due_date, user_id, list_id)
+      VALUES (?, ?, ?, ?, ?)
+      `,
+      [title, description, due_date, user_id, list_id],
     );
-
-    console.log(`Team updated successfully`);
-
-    // Send success response to the frontend
-    // event.sender.send("addDataToTeam-response", { success: true });
-    return { success: true };
+    return { success: true, status: 201, message: "New task inserted successfully" };
+    
   } catch (err) {
-    console.error("Error updating team:", err.message);
-    // Send error response to the frontend
-    // event.sender.send("addDataToTeam-response", { error: err.message });
+    console.error("Error adding task:", err.message);
     return { error: err.message };
   }
 });
 
-//create new class
-// ipcMain.handle("createNewClass", async (event, args) => {
-//   try {
-//     if (!args || typeof args !== "object") {
-//       throw new Error("Invalid arguments received for createNewClass");
-//     }
-//     const { teamname, amount, protected_id, portrait, project_id, crowd } = args;
-//     if (!teamname || !amount || !project_id) {
-//       throw new Error("Missing required data for createNewClass");
-//     }
 
-//     const db = new sqlite3.Database(dbPath);
-//     const query = `
-//       INSERT INTO teams (
-//           teamname,
-//           amount,
-//           protected_id,
-//           portrait,
-//           crowd,
-//           project_id
-//       )
-//       VALUES (?, ?, ?, ?, ?, ?)
-//     `;
-//     const params = [
-//       teamname,
-//       amount,
-//       protected_id ? 1 : 0, // Convert boolean to integer
-//       portrait ? 1 : 0, // Convert boolean to integer
-//       crowd ? 1 : 0, // Convert boolean to integer
-//       project_id
-//     ];
-
-//     const result = await executeUpdateWithRetry(db, query, params);
-//     console.log(`Class added successfully`);
-
-//     await closeDatabase(db);
-
-//     // Send success response to the frontend
-//     return { success: true };
-//   } catch (err) {
-//     console.error("Error adding new class:", err.message);
-//     // Send error response to the frontend
-//     return { error: err.message };
-//   }
-// });
-ipcMain.handle("createNewClass", async (event, args) => {
+//get all lists by user_id
+ipcMain.handle("getAllTasks", async (event, user_id, list_id) => {
+  const query = "SELECT * FROM tasks WHERE user_id = ? AND list_id = ? AND is_deleted = 0";
   try {
-    if (!args || typeof args !== "object") {
-      throw new Error("Invalid arguments received for createNewClass");
-    }
-    const {
-      teamname,
-      amount,
-      protected_id,
-      portrait,
-      reason_not_portrait,
-      project_id,
-      crowd,
-    } = args;
-    if (!teamname || !amount || !project_id) {
-      throw new Error("Missing required data for createNewClass");
-    }
+    const tasks = await new Promise((resolve, reject) => {
+      const db = new sqlite3.Database(dbPath);
 
-    const result = await db.run(
-      `
-          INSERT INTO teams (
-              teamname, 
-              amount, 
-              protected_id,
-              portrait, 
-              reason_not_portrait, 
-              crowd, 
-              project_id
-          )
-          VALUES (?, ?, ?, ?, ?, ?, ?)
-          `,
-      [
-        teamname,
-        amount,
-        protected_id ? 1 : 0, // Convert boolean to integer,
-        portrait ? 1 : 0, // Convert boolean to integer
-        reason_not_portrait,
-        crowd ? 1 : 0, // Convert boolean to integer
-        project_id,
-      ],
-    );
+      db.all(query, [user_id, list_id], (error, rows) => {
+        if (error != null) {
+          db.close();
+          reject({ statusCode: 400, errorMessage: error });
+        }
 
-    console.log(`Class added successfully`);
+        const tasks = rows.map((row) => ({
+          task_id: row.task_id,
+          title: row.title,
+          description: row.description,
+          due_date: row.due_date,
+          updated: row.updated,
+          is_deleted: row.is_deleted,
+          is_completed: row.is_completed,
+          created: row.created,
+          user_id: row.user_id,
+          list_id: row.list_id,
+        }));
 
-    // Send success response to the frontend
-    // event.sender.send("createNewClass-response", { success: true });
-    return { success: true };
-  } catch (err) {
-    console.error("Error adding new class:", err.message);
-    // Send error response to the frontend
-    // event.sender.send("createNewClass-response", { error: err.message });
-    return { error: err.message };
+        resolve({ status: 200, tasks: tasks });
+      });
+    });
+    return tasks;
+    // return { statusCode: 200, lists: lists }; 
+  } catch (error) {
+    console.error("Error fetching tasks:", error);
+    return { statusCode: 500, errorMessage: error.message || "Internal Server Error" };
   }
 });
 
-//Add team data to team
-// ipcMain.handle("addTeamDataToTeam", async (event, args) => {
-//   try {
-//     if (!args || typeof args !== "object") {
-//       throw new Error("Invalid arguments received for addTeamDataToTeam");
-//     }
 
-//     const { amount, protected_id, portrait, crowd, sold_calendar, team_id } = args;
+// Get task by task id
+ipcMain.handle("getTaskByTaskId", async (event, task_id, user_id) => {
+  const query = "SELECT * FROM tasks WHERE task_id = ? AND user_id = ? AND is_deleted = 0";
 
-//     if (!amount || !team_id) {
-//       throw new Error("Missing required data for addTeamDataToTeam");
-//     }
-
-//     const db = new sqlite3.Database(dbPath);
-//     const query = `
-//       UPDATE teams
-//       SET amount = ?,
-//       protected_id = ?,
-//       portrait = ?,
-//       crowd = ?,
-//       sold_calendar = ?
-//       WHERE team_id = ?
-//     `;
-//     const params = [
-//       amount,
-//       protected_id ? 1 : 0,
-//       portrait ? 1 : 0,
-//       crowd ? 1 : 0,
-//       sold_calendar,
-//       team_id
-//     ];
-
-//     const result = await executeUpdateWithRetry(db, query, params);
-//     console.log(`Team data added successfully`);
-
-//     await closeDatabase(db);
-
-//     // Send success response to the frontend
-//     return { success: true };
-//   } catch (err) {
-//     console.error("Error adding data to team:", err.message);
-//     // Send error response to the frontend
-//     return { error: err.message };
-//   }
-// });
-ipcMain.handle("addTeamDataToTeam", async (event, args) => {
   try {
-    if (!args || typeof args !== "object") {
-      throw new Error("Invalid arguments received for addTeamDataToTeam");
-    }
+    const task = await new Promise((resolve, reject) => {
+      const db = new sqlite3.Database(dbPath);
+      db.get(query, [task_id, user_id], (error, row) => {
+        db.close();
+        if (error) reject({ statusCode: 400, errorMessage: error });
+        resolve({ statusCode: 200, task: row });
+      });
+    });
 
-    const {
-      amount,
-      protected_id,
-      portrait,
-      reason_not_portrait,
-      crowd,
-      sold_calendar,
-      team_id,
-    } = args;
-
-    if (!amount || !team_id) {
-      throw new Error("Missing required data for addTeamDataToTeam");
-    }
-
-    const result = await db.run(
-      `
-        UPDATE teams
-        SET amount = ?,
-        protected_id = ?,
-        portrait = ?,
-        reason_not_portrait = ?,
-        crowd = ?,
-        sold_calendar = ?
-        WHERE team_id = ?
-        `,
-      [
-        amount,
-        protected_id ? 1 : 0,
-        portrait ? 1 : 0,
-        reason_not_portrait,
-        crowd ? 1 : 0,
-        sold_calendar,
-        team_id,
-      ],
-    );
-
-    console.log(`Team data added successfully`);
-
-    // Send success response to the frontend
-    // event.sender.send("addTeamDataToTeam-response", { success: true });
-    return { success: true };
-  } catch (err) {
-    console.error("Error adding data to team:", err.message);
-    // Send error response to the frontend
-    // event.sender.send("addTeamDataToTeam-response", { error: err.message });
-    return { error: err.message };
+    return task;
+  } catch (error) {
+    return { statusCode: 0, errorMessage: error.message };
   }
 });
 
-//delete team
-ipcMain.handle("deleteTeam", async (event, team_id) => {
-  const updateQuery = "UPDATE teams SET is_deleted = 1 WHERE team_id = ?";
+
+
+ipcMain.handle('updateTaskCompletion', async (event, _check, task_id, user_id) => {
+    log.info("_check", _check);
+    if (_check === undefined || !user_id || !task_id) {
+        throw new Error("Missing required user data for updateTaskCompletion");
+    }
+
+    const query = 'UPDATE tasks SET is_completed = ? WHERE task_id = ? AND user_id = ?';
+
+    try {
+        const result = await new Promise((resolve, reject) => {
+            db.run(query, [_check, task_id, user_id], (error, results) => {
+                if (error) {
+                    console.error('Error updating task:', error);
+                    reject(error);
+                } else {
+                    resolve(results);
+                }
+            });
+        });
+
+        // Return a success message to the renderer process
+        return { status: 200, task_id: task_id, message: 'Task updated successfully' };
+    } catch (error) {
+        console.error('Error in updateTaskCompletion:', error);
+        return { status: 500, message: 'Failed to update task' };
+    }
+});
+
+
+//get all lists by user_id
+ipcMain.handle("getTasksDueToday", async (event, user_id) => {
+  const query = `
+    SELECT * 
+    FROM lists 
+    LEFT JOIN tasks 
+    ON lists.list_id = tasks.list_id 
+    WHERE lists.user_id = ? 
+    AND lists.archived = 0
+    AND lists.is_deleted = 0 
+    AND tasks.is_deleted = 0
+    AND tasks.due_date = date('now')
+  `;
+
+  try {
+    const tasks = await new Promise((resolve, reject) => {
+      const db = new sqlite3.Database(dbPath);
+
+      db.all(query, [user_id], (error, rows) => {
+        if (error != null) {
+          db.close();
+          reject({ statusCode: 400, errorMessage: error });
+        }
+
+        const tasks = rows.map((row) => ({
+          list_id: row.list_id,
+          task_id: row.task_id,
+          list_name: row.name,
+          list_color: row.color,
+          task_title: row.title,
+          task_title: row.title,
+          task_description: row.description,
+          task_due_date: row.due_date,
+          task_updated: row.updated,
+          task_is_deleted: row.is_deleted,
+          task_is_completed: row.is_completed,
+          task_created: row.created,
+          task_user_id: row.user_id,
+        }));
+
+        resolve({ status: 200, tasks: tasks });
+      });
+    });
+    return tasks;
+  } catch (error) {
+    console.error("Error fetching tasks:", error);
+    return { statusCode: 500, errorMessage: error.message || "Internal Server Error" };
+  }
+});
+
+
+
+ipcMain.handle("updateTask", async (event, args) => {
+  const { user_id, list_id, task_id, title, description, due_date } = args;
+
+  if (!user_id || !task_id) {
+    return { status: 400, message: "Missing required user or task ID" };
+  }
+
+  let query = "UPDATE tasks SET ";
+  let params = [];
+  let updates = [];
+
+  updates.push("description = ?");
+  params.push(description);
+  updates.push("due_date = ?");
+  params.push(due_date);
+  if (title) {
+    updates.push("title = ?");
+    params.push(title);
+  }
+  if (list_id) {
+    updates.push("list_id = ?");
+    params.push(list_id);
+  }
+  if (updates.length === 0) {
+    return { status: 400, message: "No valid fields provided for update" };
+  }
+
+  query += updates.join(", ") + " WHERE task_id = ? AND user_id = ?";
+  params.push(task_id, user_id);
 
   try {
     const result = await new Promise((resolve, reject) => {
-      const db = new sqlite3.Database(dbPath);
-
-      db.run(updateQuery, [team_id], function (error) {
-        if (error) {
-          db.close();
-          reject({ status: 500, statusCode: 500, errorMessage: error });
-        } else {
-          db.close();
-          resolve({ rowsAffected: this.changes });
-        }
-      });
-    });
-
-    if (result.rowsAffected > 0) {
-      return { status: 200, statusCode: 200, message: "Team deleted successfully", result };
-    } else {
-      return { status: 404, statusCode: 404, message: "Team not found or already deleted" };
-    }
-  } catch (error) {
-    console.error("Error deleting team:", error);
-    return { statusCode: 0, errorMessage: error.message };
-  }
-});
-
-//edit team data
-ipcMain.handle("editTeam", async (event, args) => {
-  try {
-    if (!args || typeof args !== "object") {
-      throw new Error("Invalid arguments received for editTeam");
-    }
-
-    const {
-      amount,
-      protected_id,
-      portrait,
-      reason_not_portrait,
-      crowd,
-      teamname,
-      team_id,
-      sold_calendar,
-      leader_firstname,
-      leader_lastname,
-      leader_email,
-      leader_ssn,
-      leader_mobile,
-      leader_postalcode,
-      leader_address,
-      calendar_amount,
-      leader_county,
-    } = args;
-
-    if (!amount || !teamname || !team_id) {
-      throw new Error(
-        "Missing required data for editTeam (amount, teamname, team_id)",
-      );
-    }
-
-    // Adding data to teams_history table
-    // Define SQL statement to insert updated team data into teams_history table
-    const historySQL = `
-            INSERT INTO teams_history (team_id, teamname, amount, leader_firstname, leader_lastname, leader_email, leader_mobile, leader_ssn, leader_address, leader_postalcode, leader_county, calendar_amount, portrait, reason_not_portrait, crowd, protected_id, sold_calendar)
-            SELECT team_id, teamname, amount, leader_firstname, leader_lastname, leader_email, leader_mobile, leader_ssn, leader_address, leader_postalcode, leader_county, calendar_amount, portrait, reason_not_portrait, crowd, protected_id, sold_calendar
-            FROM teams
-            WHERE team_id = ?
-        `;
-
-    // Execute insertion SQL statement to copy current team data to teams_history table
-    await db.run(historySQL, [team_id]);
-
-    const result = await db.run(
-      `
-      UPDATE teams
-      SET 
-        amount = ?,
-        teamname = ?,
-        protected_id = ?,
-        portrait = ?,
-        reason_not_portrait = ?,
-        sold_calendar = ?,
-        crowd = ?,
-        leader_firstname = ?,
-        leader_lastname = ?,
-        leader_email = ?,
-        leader_ssn = ?,
-        leader_mobile = ?,
-        leader_postalcode = ?,
-        leader_address = ?,
-        calendar_amount = ?,
-        leader_county = ?
-      WHERE team_id = ?
-      `,
-      [
-        amount,
-        teamname,
-        protected_id,
-        portrait,
-        reason_not_portrait,
-        sold_calendar,
-        crowd,
-        leader_firstname,
-        leader_lastname,
-        leader_email,
-        leader_ssn,
-        leader_mobile,
-        leader_postalcode,
-        leader_address,
-        calendar_amount,
-        leader_county,
-        team_id,
-      ],
-    );
-
-    console.log(`Team data edited successfully`);
-    return { success: true };
-  } catch (err) {
-    console.error("Error editing data:", err.message);
-    return { error: err.message };
-  }
-});
-
-//get team by team id
-ipcMain.handle("getTeam", async (event, team_id) => {
-  const retrieveQuery = "SELECT * FROM teams WHERE team_id = ?";
-  console.log("SQL Query:", retrieveQuery, "Parameters:", [team_id]);
-
-  try {
-    const team = await new Promise((resolve, reject) => {
-      const db = new sqlite3.Database(dbPath);
-
-      db.all(retrieveQuery, [team_id], (error, rows) => {
-        if (error != null) {
-          db.close();
-          reject({ statusCode: 0, errorMessage: error });
-        }
-
-        const teamData = rows.map((row) => ({
-          team_id: row.team_id,
-          teamname: row.teamname,
-          amount: row.amount,
-          leader_firstname: row.leader_firstname,
-          leader_lastname: row.leader_lastname,
-          leader_address: row.leader_address,
-          leader_postalcode: row.leader_postalcode,
-          leader_county: row.leader_county,
-          leader_mobile: row.leader_mobile,
-          leader_email: row.leader_email,
-          leader_ssn: row.leader_ssn,
-          portrait: row.portrait,
-          crowd: row.crowd,
-          protected_id: row.protected_id,
-          named_photolink: row.named_photolink,
-          sold_calendar: row.sold_calendar,
-          created: row.created,
-          project_id: row.project_id,
-        }));
-
-        db.close(() => {
-          resolve({ statusCode: 1, team: teamData });
-        });
-      });
-    });
-
-    return team;
-  } catch (error) {
-    console.error("Error fetching team:", error);
-    return { statusCode: 0, errorMessage: error.message };
-  }
-});
-
-//Add team data to team
-ipcMain.handle("addAnomalyToProject", async (event, args) => {
-  try {
-    if (!args || typeof args !== "object") {
-      throw new Error("Invalid arguments received for addAnomalyToProject");
-    }
-
-    const { anomaly, merged_teams, project_id } = args;
-
-    if (!project_id) {
-      throw new Error("Missing required project_id for addAnomalyToProject");
-    }
-
-    let query = "UPDATE projects SET";
-    const params = [];
-
-    if (anomaly !== undefined) {
-      query += " anomaly = ?,";
-      params.push(anomaly);
-    }
-    if (merged_teams !== undefined) {
-      query += " merged_teams = ?,";
-      params.push(merged_teams);
-    }
-
-    // Remove the trailing comma from query
-    query = query.slice(0, -1);
-
-    query += " WHERE project_id = ?";
-    params.push(project_id);
-
-    // Execute the query
-    const result = await db.run(query, params);
-
-    console.log(`Data (anomaly and/or merged_teams) added successfully`);
-
-    // Send success response to the frontend
-    // event.sender.send("addAnomalyToProject-response", { success: true });
-    return { success: true };
-  } catch (err) {
-    console.error("Error adding data to team:", err.message);
-    // Send error response to the frontend
-    // event.sender.send("addAnomalyToProject-response", { error: err.message });
-    return { error: err.message };
-  }
-});
-
-//get all projects and teams by user_id
-ipcMain.handle("getProjectsAndTeamsByUserId", async (event, user_id) => {
-  const retrieveQuery = `
-      SELECT t.team_id, t.teamname, t.amount, t.leader_firstname, t.leader_lastname,
-            t.leader_address, t.leader_postalcode, t.leader_county, t.leader_mobile,
-            t.leader_email, t.leader_ssn, t.calendar_amount, t.portrait, t.crowd,
-            t.protected_id, t.named_photolink, t.sold_calendar, t.is_deleted, t.created,
-            t.project_id, p.project_uuid, p.projectname, p.project_date, p.type, p.anomaly, p.merged_teams,
-            p.unit, p.alert_sale, p.is_deleted AS project_is_deleted, p.is_sent, p.sent_date,
-            p.user_id AS project_user_id, p.created AS project_created
-      FROM teams AS t
-      JOIN projects AS p ON t.project_id = p.project_id
-      WHERE p.user_id = ? AND t.is_deleted = 0 AND p.is_deleted = 0 AND p.is_sent = 1
-    `;
-  // console.log("SQL Query:", retrieveQuery, "Parameters:", [user_id]);
-
-  try {
-    const data = await new Promise((resolve, reject) => {
-      const db = new sqlite3.Database(dbPath);
-
-      db.all(retrieveQuery, [user_id], (error, rows) => {
-        if (error != null) {
-          db.close();
-          reject({ statusCode: 0, errorMessage: error });
-        }
-
-        const allData = rows.map((row) => ({
-          project_id: row.project_id,
-          project_uuid: row.project_uuid,
-          projectname: row.projectname,
-          type: row.type,
-          anomaly: row.anomaly,
-          merged_teams: row.merged_teams,
-          unit: row.unit,
-          alert_sale: row.alert_sale,
-          is_deleted: row.project_is_deleted,
-          is_sent: row.is_sent,
-          sent_date: row.sent_date,
-          user_id: row.project_user_id,
-          created: row.project_created,
-          teams: {
-            team_id: row.team_id,
-            teamname: row.teamname,
-            amount: row.amount,
-            leader_firstname: row.leader_firstname,
-            leader_lastname: row.leader_lastname,
-            leader_address: row.leader_address,
-            leader_postalcode: row.leader_postalcode,
-            leader_county: row.leader_county,
-            leader_mobile: row.leader_mobile,
-            leader_email: row.leader_email,
-            leader_ssn: row.leader_ssn,
-            calendar_amount: row.calendar_amount,
-            portrait: row.portrait,
-            crowd: row.crowd,
-            protected_id: row.protected_id,
-            named_photolink: row.named_photolink,
-            sold_calendar: row.sold_calendar,
-            is_deleted: row.is_deleted,
-            created: row.created,
-          },
-        }));
-
-        db.close(() => {
-          resolve({ statusCode: 1, data: allData });
-        });
-      });
-    });
-
-    return data;
-  } catch (error) {
-    console.error("Error fetching data:", error);
-    return { statusCode: 0, errorMessage: error.message };
-  }
-});
-
-ipcMain.on("navigateBack", (event) => {
-  // Corrected to match the IPC event name
-  const focusedWindow = BrowserWindow.getFocusedWindow();
-  if (focusedWindow) {
-    focusedWindow.webContents.goBack(); // Navigate back in the Electron window
-  }
-});
-
-//GDPR protection
-ipcMain.handle("gdprProtection", async (event) => {
-  const updateQuery =
-    "UPDATE teams SET leader_ssn = 'x', leader_firstname = 'x', leader_lastname = 'x', leader_email = 'x', leader_mobile = 'x', leader_address = 'x', leader_county = 'x', leader_postalcode = 'x' WHERE created < date('now', '-12 months')";
-
-  const db = new sqlite3.Database(dbPath);
-
-  try {
-    const result = await executeUpdateWithRetry(db, updateQuery);
-    await closeDatabase(db);
-    return { statusCode: 1, result };
-  } catch (error) {
-    await closeDatabase(db);
-    console.error("Error clearing GDPR data:", error);
-    return { statusCode: 0, errorMessage: error.message };
-  }
-});
-
-
-//GDPR protection teams_history
-ipcMain.handle("gdprProtection_teamshistory", async (event) => {
-  const updateQuery =
-    "UPDATE teams_history SET leader_ssn = 'x', leader_firstname = 'x', leader_lastname = 'x', leader_email = 'x', leader_mobile = 'x',  leader_address = 'x',  leader_county = 'x',  leader_postalcode = 'x'  WHERE created < date('now', '-12 months')";
-
-  const db = new sqlite3.Database(dbPath);
-
-  try {
-    const result = await executeUpdateWithRetry(db, updateQuery);
-    await closeDatabase(db);
-    return { statusCode: 1, result };
-  } catch (error) {
-    await closeDatabase(db);
-    console.error("Error clearing GDPR data in teams_history:", error);
-    return { statusCode: 0, errorMessage: error.message };
-  }
-});
-async function executeUpdateWithRetry(
-  db,
-  query,
-  params = [],
-  retries = 5,
-  delay = 1000,
-) {
-  return new Promise((resolve, reject) => {
-    function attempt() {
       db.run(query, params, function (error) {
         if (error) {
-          if (error.code === "SQLITE_BUSY" && retries > 0) {
-            setTimeout(attempt, delay);
-          } else {
-            reject(error);
-          }
+          console.error("Error updating task:", error);
+          reject(error);
         } else {
-          resolve({ rowsAffected: this.changes });
+          resolve({ changes: this.changes });
         }
       });
-    }
-    attempt();
-  });
-}
-
-
-
-
-
-// KNOWLEDGEBASE
-
-
-//Creating window for showing file in knowledge base
-ipcMain.handle('createknowledgebasewindow', async (event, url) => {
-  const win = new BrowserWindow({
-      autoHideMenuBar: true,
-      width: 1200,
-      height: 600,
-      // parent: mainWindow, // Set the parent window
-      // modal: true, // Makes the window modal
-  });
-
-  win.loadURL(url);
-});
-
-//download file from knowledge base to desktop
-ipcMain.handle('downloadKnowledgebaseFile', (event, base64Data, fileName) => {
-  return new Promise((resolve, reject) => {
-    try {
-      // Define path to desktop
-      const desktopPath = app.getPath('desktop');
-      const fullPath = path.join(desktopPath, fileName);
-
-      // Decode the Base64 string and write to file
-      const buffer = Buffer.from(base64Data, 'base64');
-
-      fs.writeFile(fullPath, buffer, (err) => {
-        if (err) {
-          console.error('File write error:', err);
-          reject({ status: 500, error: 'Failed to download file' });
-        } else {
-          console.log('File saved successfully:', fullPath);
-          resolve({ status: 200, message: fullPath });
-        }
-      });
-    } catch (error) {
-      console.error('Error in downloadKnowledgebaseFile:', error);
-      reject({ status: 500, error: 'Failed to download file' });
-    }
-  });
-});
-
-
-
-//get all articles in knowledgebase table
-ipcMain.handle("getKnowledgebaseArticles", async (event, user_lang) => {
-  console.log("getKnowledgebaseArticles user_lang: ", user_lang);
-
-  const retrieveQuery =
-    "SELECT * FROM knowledgebase WHERE deleted = 0 AND langs = ?";
-  
-
-  const db = new sqlite3.Database(dbPath);
-
-  try {
-    const rows = await executeQueryWithRetry(db, retrieveQuery, [user_lang]);
-
-    const articles = rows.map((row) => ({
-      id: row.id,
-      title: row.title,
-      description: row.description,
-      tags: row.tags ? row.tags.split(",") : [], 
-      langs: row.langs ? row.langs.split(",") : [],
-      files: row.files ? JSON.parse(row.files) : [], 
-      author: row.author,
-      created_at: row.created_at,
-      updated_at: row.updated_at,
-      deleted: row.deleted,
-    }));
-
-    await closeDatabase(db);
-    return { statusCode: 200, articles: articles };
-  } catch (error) {
-    await closeDatabase(db);
-    console.error("Error fetching knowledgebase articles (getKnowledgebaseArticles):", error);
-    return { statusCode: 500, errorMessage: error.message };
-  }
-});
-
-
-//post articles to knowledgebase table
-ipcMain.handle("createKnowledgebaseArticles", async (event, data) => {
-  
-  const insertQuery = `
-  INSERT INTO knowledgebase (article_id, title, description, tags, langs, files, author, created_at, updated_at, deleted)
-  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  ON CONFLICT(article_id) DO UPDATE SET
-    title = excluded.title,
-    description = excluded.description,
-    tags = excluded.tags,
-    langs = excluded.langs,
-    files = excluded.files,
-    author = excluded.author,
-    created_at = excluded.created_at,
-    updated_at = excluded.updated_at,
-    deleted = excluded.deleted;`;
-
-  const deleteQuery = `
-  UPDATE knowledgebase SET deleted = 1 WHERE article_id = ?`;
-
-  const db = new sqlite3.Database(dbPath);
-
-  try {
-    const existingIdQuery = `SELECT article_id FROM knowledgebase WHERE deleted = 0`;
-    const existingIds = await executeQueryWithRetry(db, existingIdQuery); 
-    const existingIdSet = new Set(existingIds.map(row => row.article_id));
-
-    const incomingIdSet = new Set(data.map(article => article.id));
-    for (const articleId of existingIdSet) {
-      if (!incomingIdSet.has(articleId)){
-        await executeQueryWithRetry(db, deleteQuery, [articleId]); 
-      }
-    }
-
-    for (const article of data) {
-      const { id, title, description, tags, langs, files, author, created_at, updated_at } = article;
-
-      if (!id || !title || !description || !langs || !tags || !created_at) {
-        return { statusCode: 400, errorMessage: "Missing required fields for one or more articles" };
-      }
-
-      const tagsArray = Array.isArray(tags) ? tags.join(", ") : "";
-      const langsArray = Array.isArray(langs) ? langs.join(", ") : "";
-      const filesArray = JSON.stringify(files);
-      const deleted = 0
-
-      await executeQueryWithRetry(db, insertQuery, [
-        id, title, description, tagsArray, langsArray, filesArray, author, created_at, updated_at, deleted 
-      ]);
-
-    }
-    await closeDatabase(db);
-    return { statusCode: 201, message: "Articles added successfully" };
-  } catch (error) {
-    await closeDatabase(db);
-    console.error("Error adding knowledgebase article:", error);
-    return { statusCode: 500, errorMessage: error.message };
-  }
-});
-
-
-//Download knowledge base file to locale computer
-ipcMain.handle('donwloadKnowledgeBaseFiles', async (event, file) => {
-  try {
-    const localFilePath = path.join(
-      'C:',
-      'ProgramData',
-      'Photographer Portal',
-      'KnowledgeBaseFiles', 
-      `${file.originalname}`
-    );
-    // log.info("localFilePath:", localFilePath);
-
-    if (fs.existsSync(localFilePath)) {
-      console.log(`File already exists: ${file.originalname}`);
-      return { statusCode: 200, status: "skipped", fileName: file.originalname, fileId: file.id };
-    }
-      // Make sure directory exists
-      const pathDir = path.dirname(localFilePath);
-      if (!fs.existsSync(pathDir)) {
-        fs.mkdirSync(pathDir, { recursive: true });
-      }
-      // log.info("pathDir:", pathDir);
-
-    // Download file
-    const downloadUrl = `https://fs.ebx.nu/download/${file.id}`;
-    const response = await axios.get(downloadUrl, { responseType: 'arraybuffer' });
-    fs.writeFileSync(localFilePath, response.data);
-
-    console.log(`Downloaded and saved: ${file.originalname, "to path:", pathDir}`);
-    return { statusCode: 200, status: "success", fileName: file.originalname, fileId: file.id };
-  } catch (error) {
-    console.error('Error downloading file:', error);
-    return { statusCode: 400, status: "failure", fileName: file.originalname, fileId: file.id, message: error.message };
-  }
-});
-
-
-// Open knowledge base file
-ipcMain.handle('openLocallyKnowledgeBaseFile', async (event, filename) => {
-  log.info("filename", filename);
-  try {
-     const localFilePath = path.join(
-      'C:',
-      'ProgramData',
-      'Photographer Portal',
-      'KnowledgeBaseFiles', 
-      `${filename}`
-    );
-
-    if (fs.existsSync(localFilePath)) {
-      await shell.openPath(localFilePath);
-      return { statusCode: 200, status: 'success', fileName: filename, filePath: localFilePath };
-    }else {
-      console.error('File does not exist locally:', localFilePath);
-      return { statusCode: 404, status: 'failure', fileName: filename, filePath: localFilePath };
-    }
-  } catch (error) {
-    console.log("Error viewing file:", error)
-    return { statusCode: 400, status: "failure", fileName: filename, message: error.message }
-  }
-})
-
-// DO NOT NEED
-// Download knowledge base file
-ipcMain.handle('downloadLocallyKnowledgeBaseFile', async (event, filename) => {
-  log.info("filename", filename);
-  try {
-
-    const result = await dialog.showSaveDialog({
-      title: 'Save Knowledge Base File',
-      defaultPath: path.join(os.homedir(), 'Desktop', filename),
-      filters: [
-        { name: 'All Files', extensions: ['*'] } 
-      ]
     });
 
-    if (result.canceled) {
-      console.log('User canceled the save dialog');
-      return { statusCode: 0, status: 'canceled' };
+    if (result.changes === 0) {
+      return { status: 404, message: "Task not found or no changes made" };
     }
 
-    const selectedPath = result.filePath;
-
-    if (fs.existsSync(selectedPath)) {
-      await shell.openPath(selectedPath); 
-      return {
-        statusCode: 200,
-        status: 'success',
-        fileName: filename,
-        filePath: selectedPath
-      };
-    } else {
-      console.error('File does not exist locally:', selectedPath);
-      // resolve({ status: 'failure' });
-      return {
-        statusCode: 404,
-        status: 'failure',
-        fileName: filename,
-        filePath: selectedPath
-      };
-    }
+    return { status: 200, task_id, message: "Task updated successfully" };
   } catch (error) {
-    console.log("Error viewing file:", error)
-    return { statusCode: 400, status: "failure", fileName: filename, message: error.message }
+    console.error("Error in updateTask:", error);
+    return { status: 500, message: "Failed to update task" };
   }
-})
-
-
-
-
-
-// FILETRANSFER
-
-
-let cancelledFtpUpload = false;
-
-ipcMain.handle("cancelFtpUpload", async (event) => {
-  cancelledFtpUpload = true;
-  log.info("FTP upload canceled by user.");
 });
-//upload file in filetransfer
-ipcMain.handle("uploadFile", async (event, filePath, lang, filesize) => {
-  log.info("uploadFile triggered");
-  let country = "";
-  if (lang === "SE") {
-    country = "Sweden";
-  } else if (lang === "NO") {
-    country = "Norway";
-  } else if (lang === "FI") {
-    country = "Finland";
-  } else if (lang === "DE") {
-    country = "Germany";
-  } else if (lang === "DK") {
-    country = "Denmark";
+
+
+ipcMain.handle('deleteTask', async (event, task_id, user_id) => {
+  if (!user_id || !task_id) {
+      throw new Error("Missing required user data for deleteTask");
   }
+  const query = 'UPDATE tasks SET is_deleted = 1 WHERE user_id = ? AND task_id = ?';
   try {
-    log.info("starting file upload");
-    const result = await uploadFileToFTP(event, filePath, ftpConfig, country, filesize);
-    log.info("result uploadFileToFTP:", result);
-    return { statusCode: 200, status: "success", message: result };
-  } catch (error) {
-    log.info("error file upload");
-    log.info(error.message);
-    return { statusCode: 400, status: "failure", message: error.message };
-  }
-});
-
-//uploadfiletoFTP method
-async function uploadFileToFTP(event, filePath, ftpConfig, country, filesize) {
-  cancelledFtpUpload = false;
-  const client = new ftp.Client();
-  client.ftp.verbose = true;
-  try {
-    await client.access(ftpConfig);
-    log.info(`Uploading ${filePath} to FTP server...`);
-    log.info(`Connected to FTP server: ${ftpConfig.host}`);
-
-    const remoteDirectory = `FileTransfer/${country}/`;
-    log.info("remote directory:", remoteDirectory);
-
-    const remotePath = path.posix.join(
-      remoteDirectory,
-      path.basename(filePath),
-    );
-    log.info(`Uploading ${filePath} to FTP server as ${remotePath}...`);
-
-    client.trackProgress((info) => {
-      console.log("File", info.name);
-      console.log("File size", filesize);
-      console.log("Type", info.type);
-      console.log("Transferred", info.bytes);
-      console.log("Transferred Overall", info.bytesOverall);
-      const percentage = ((info.bytesOverall / filesize) * 100).toFixed(2);
-      console.log(`Upload Progress: ${percentage}%`);
-      event.sender.send("upload-progress", { percentage });
-
-      // If user cancels the upload
-      if (cancelledFtpUpload) {
-        client.close();
-        event.sender.send("upload-canceled", { response: 'Upload canceled by user' });
-        log.info("Upload aborted by the user.");
-        return;
-      }
-    });
-    await client.uploadFrom(filePath, remotePath);
-    log.info("Upload successful!");
-    return "Upload successful!";
-  } catch (err) {
-    log.info("Error uploading file:", err);
-    // return { statusCode: 500, status: "failure", message: err.message };
-    throw new Error(`${err.message}`);
-  } finally {
-    client.close();
-  }
-}
-
-
-//create new FT project
-ipcMain.handle("createNewFTProject", async (event, data) => {
-  log.info("createNewFTProject triggered");
-  return new Promise((resolve, reject) => {
-    try {
-      if (!data || typeof data !== "object") {
-        throw new Error("Invalid arguments received for createNewFTProject");
-      }
-      const { project_uuid, projectname, user_id, project_id } = data;
-      if (!project_uuid || !projectname || !user_id || !project_id) {
-        throw new Error("Missing required data for createNewFTProject");
-      }
-
-      const query = `
-          INSERT INTO ft_projects (
-              project_uuid, projectname, user_id, project_id 
-          )
-          VALUES (?, ?, ?, ?)
-        `;
-      const params = [project_uuid, projectname, user_id, project_id];
-
-      db.run(query, params, function (err) {
-        if (err) {
-          log.error("Error adding new createNewFTProject:", err.message);
-          reject({ status: 400, error: err.message });
-        } else {
-          const ft_project_id = this.lastID;
-          log.info(
-            `createNewFTProject added successfully with id ${ft_project_id}`,
-          );
-          resolve({ status: 200, success: true, ft_project_id });
-        }
-      });
-    } catch (err) {
-      log.error("Error adding new createNewFTProject:", err.message);
-      reject({ error: err.message });
-    }
-  });
-});
-
-//add new FT file
-ipcMain.handle("addFTFile", async (event, fileData) => {
-  return new Promise((resolve, reject) => {
-    try {
-      if (!fileData || typeof fileData !== "object") {
-        throw new Error("Invalid arguments received for addFTFile");
-      }
-      const { filename, ft_project_id, filepath } = fileData;
-      if (!filename || !ft_project_id) {
-        throw new Error("Missing required data for addFTFile");
-      }
-
-      const query = `
-            INSERT INTO ft_files (
-              filename, ft_project_id, filepath, is_sent
-            )
-            VALUES (?, ?, ?, ?)
-          `;
-      const params = [filename, ft_project_id, filepath, 1];
-
-      db.run(query, params, function (err) {
-        if (err) {
-          log.error("Error adding new addFTFile:", err.message);
-          reject({status: 400, error: err.message });
-        } else {
-          log.info(`addFTFile added successfully`);
-          resolve({ status: 201, success: true, message: "success", filename: filename });
-        }
-      });
-    } catch (err) {
-      log.error("Error adding new addFTFile:", err.message);
-      reject({ status: 400, error: err.message });
-    }
-  });
-});
-
-ipcMain.handle("getAllFTData", async (event, user_id) => {
-  return new Promise((resolve, reject) => {
-    const query = `
-          SELECT p.ft_project_id, p.project_uuid, p.projectname, p.is_sent, p.created, p.user_id, p.project_id, f.ft_file_id, f.filename, f.filepath, f.uploaded_at, f.is_sent
-          FROM ft_projects p
-          INNER JOIN ft_files f ON p.ft_project_id = f.ft_project_id
-          WHERE p.user_id = ? AND f.is_sent = 1;
-        `; 
-
-    db.all(query, [user_id], (err, rows) => {
-      if (err) {
-        log.error("Error fetching FT data:", err.message);
-        reject(new Error(err.message));
-      } else {
-        const projects = {};
-
-        rows.forEach((row) => {
-          if (!projects[row.ft_project_id]) {
-            projects[row.ft_project_id] = {
-              ft_project_id: row.ft_project_id,
-              project_uuid: row.project_uuid,
-              projectname: row.projectname,
-              created: row.created,
-              user_id: row.user_id,
-              project_id: row.project_id,
-              files: [],
-            };
-          }
-          projects[row.ft_project_id].files.push({
-            ft_file_id: row.ft_file_id,
-            filename: row.filename,
-            filepath: row.filepath,
-            is_sent: row.is_sent,
-            uploaded_at: row.uploaded_at,
-          });
-        });
-
-        const result = Object.values(projects);
-        log.info("FT data fetched and organized successfully");
-        resolve(result);
-      }
-    });
-  }).catch((err) => {
-    log.error("Unhandled error in getAllFTData:", err.message);
-    throw err;
-  });
-});
-
-
-
-// get all unsent ft data with project_date > 3 days ago
-ipcMain.handle("getUnsentFTProjects", async (event, user_id) => {
-  log.info("user_id", user_id)
-  const retrieveQuery = `
-    SELECT p.*
-    FROM projects p
-    LEFT JOIN ft_projects ftp ON p.project_id = ftp.project_id
-    WHERE 
-      p.is_deleted = 0
-      AND p.type IS NOT "school"
-      AND p.project_date < DATE('now', '-3 days')
-      AND ftp.project_id IS NULL
-      AND p.user_id = ?;
-  `;
-  const db = new sqlite3.Database(dbPath);
-  try {
-    const rows = await executeQueryWithRetry(db, retrieveQuery, [user_id]);
-
-    const unsentFTdata = rows.map((row) => ({
-          project_uuid: row.project_uuid,
-          projectname: row.projectname,
-          project_date: row.project_date,
-          created: row.created,
-          is_sent: row.is_sent,
-          created: row.created,
-          user_id: row.user_id,
-          project_id: row.project_id
-    }));
-    log.info("unsentFTdata", unsentFTdata)
-    return { statusCode: 200, data: unsentFTdata };
-  } catch (error) {
-    console.error("Error fetching data (getAllTimereports):", error);
-    return { statusCode: 0, errorMessage: error.message };
-  } finally{
-    await closeDatabase(db);
-  }
-});
-
-
-
-
-
-// BACKUPTRANSFER
-
-// Upload file with BackupTransferChildProcess
-let activeTusProcesses = new Map();
-ipcMain.handle("uploadFileToTus", async (event, { filePath, fileName, projectUuid, token}) => {
-  return new Promise((resolve, reject) => {
-      
-      const childProcessPath = isDev 
-        ? path.join(__dirname, "BackupTransferChildProcess.exe") 
-        : path.join(process.resourcesPath, "BackupTransferChildProcess.exe"); 
-
-      log.info(`Starting child process: ${childProcessPath}`);
-      
-      const tusProcess = spawn("BackupTransferChildProcess.exe", [filePath, projectUuid, token]);
-      activeTusProcesses.set(fileName, tusProcess);
-
-      tusProcess.on("error", (err) => {
-          console.error("Failed to start process:", err);
-          reject(new Error(`Failed to start process: ${err.message}`));
-      });
-
-      let successReceived = false;
-
-      tusProcess.stdout.on("data", (data) => {
-          const messages = `${data}`.trim().split("\n"); 
-          messages.forEach((message) => {
-              console.log(`[DEBUG] Received stdout: ${message}`);
-              let parts = message.split(",");
-              let eventName = parts[0].trim();
-              let eventData = parts.length > 1 ? parts[1].trim() : null;
-      
-              if (eventName === "OnError") {
-                  console.error(`Upload failed: ${eventData}`);
-                  event.sender.send("upload-error", { fileName, eventData });
-                  reject(new Error(`Upload failed: ${eventData}`));
-              } else if (eventName === "OnProgress") {
-                  log.info(`Upload.. ${eventData}`)
-                  console.log(`Upload.. ${eventData}`)
-                  event.sender.send("upload-tus-progress", { fileName, eventData });
-              } else if (eventName === "OnSuccess") {
-                  console.log(`Upload success event received`);
-                  successReceived = true;
+      const result = await new Promise((resolve, reject) => {
+          db.run(query, [user_id, task_id], (error, results) => {
+              if (error) {
+                  console.error('Error updating task:', error);
+                  reject(error);
+              } else {
+                  resolve(results);
               }
           });
       });
-      tusProcess.on("close", (code) => {
-        console.log(`Process exited with code ${code} (successReceived=${successReceived})`);
-        activeTusProcesses.delete(fileName);
-        if (code !== 0) {
-            reject(new Error(`Process exited with code ${code}`));
-        } else if (!successReceived) {
-            console.error("No success event received before process exit.");
-            reject(new Error("No success event received before process exit."));
-        } else {
-            resolve({ status: "success", filename: fileName }); 
-        }
-    });
-    
-  });
-});
 
-// Cancel Tus upload
-ipcMain.handle("cancelTus", (event) => {
-  if (activeTusProcesses.size > 0) {
-      console.log(`Cancelling all uploads...`);
-      activeTusProcesses.forEach((process, fileName) => {
-          console.log(`Killing process for: ${fileName}`);
-          process.kill(); 
-      });
-      activeTusProcesses.clear(); 
-      event.sender.send("upload-canceled", { response: 'Upload canceled by user' });
-      // throw new Error('upload-cancelled');
-  } else {
-      console.log("No active uploads found.");
-      event.sender.send("upload-canceled", { response: 'Upload canceled by user' });
-  }
-});
-
-
-
-//create new BT project
-ipcMain.handle("createNewBTProject", async (event, data) => {
-  log.info("createNewBTProject triggered");
-  return new Promise((resolve, reject) => {
-    try {
-      if (!data || typeof data !== "object") {
-        throw new Error("Invalid arguments received for createNewBTProject");
-      }
-      const { project_uuid, projectname, user_id } = data;
-      if (!project_uuid || !projectname || !user_id) {
-        throw new Error("Missing required data for createNewBTProject");
-      }
-
-      const query = `
-          INSERT INTO bt_projects (
-              project_uuid, projectname, user_id 
-          )
-          VALUES (?, ?, ?)
-        `;
-      const params = [project_uuid, projectname, user_id];
-
-      db.run(query, params, function (err) {
-        if (err) {
-          log.error("Error adding new createNewBTProject:", err.message);
-          reject({ status: 400, error: err.message });
-        } else {
-          const bt_project_id = this.lastID;
-          log.info(
-            `createNewBTProject added successfully with id ${bt_project_id}`,
-          );
-          resolve({ status: 201, success: true, bt_project_id });
-        }
-      });
-    } catch (err) {
-      log.error("Error adding new createNewBTProject:", err.message);
-      reject({ error: err.message });
-    }
-  });
-});
-
-
-
-
-//add new BT file with is_sent = 1
-ipcMain.handle("createNewBTFile", async (event, fileData) => {
-  return new Promise((resolve, reject) => {
-    try {
-      if (!fileData || typeof fileData !== "object") {
-        throw new Error("Invalid arguments received for createNewFTFile");
-      }
-      const { filename, bt_project_id, file_path, project_uuid, file_size } = fileData;
-      if (!filename || !bt_project_id || !project_uuid) {
-        throw new Error("Missing required data for createNewFTFile");
-      }
-      const query = `
-            INSERT INTO bt_files (
-              project_uuid, filename, bt_project_id, file_path, file_size, is_sent
-            )
-            VALUES (?, ?, ?, ?, ?, ?)
-          `;
-      const params = [project_uuid, filename, bt_project_id, file_path, file_size, 1];
-      db.run(query, params, function (err) {
-        if (err) {
-          log.error("Error adding new createNewFTFile:", err.message);
-          reject({status: 400, error: err.message });
-        } else {
-          log.info(`createNewFTFile added successfully`);
-          resolve({ status: 201, success: true, message: "success", filename: filename });
-        }
-      });
-    } catch (err) {
-      log.error("Error adding new createNewFTFile:", err.message);
-      reject({ status: 400, error: err.message });
-    }
-  });
-});
-
-
-// Set project as deleted if uploading of file is cancelled for any reason
-ipcMain.handle("deleteBTProject", async (event, bt_project_id, user_id) => {
-    log.info("bt_project_id (deleteBTProject)", bt_project_id)
-    if (!bt_project_id || !user_id) {throw new Error("Data missing for 'deleteBTProject'")}
-    const query = `
-      UPDATE bt_projects SET is_deleted = 1 WHERE bt_project_id = ? AND user_id = ?;
-    `;
-    const db = new sqlite3.Database(dbPath);
-    try {
-      const res = await executeQueryWithRetry(db, query, [bt_project_id, user_id]);
-      log.info("Succesfully updated is_deleted to 1 in ft_projects table")
-      return ({ status: 200, data: res, message: "Succesfully updated is_deleted to 1 in bt_projects table", bt_project_id: bt_project_id})
-    } catch (error) {
-      log.info("Error when updating is_deleted to 1 in bt_projects table")
-      return ({ status: 500, message: "Error when updating is_deleted to 1 in bt_projects table"})
-    } finally{
-      db.close();
-    }
-})
-
-
-//add new BT file with is_sent = 0
-ipcMain.handle("createNewFailedBTFile", async (event, fileData) => {
-  return new Promise((resolve, reject) => {
-    try {
-      if (!fileData || typeof fileData !== "object") {
-        throw new Error("Invalid arguments received for createNewFailedBTFile");
-      }
-      const { filename, bt_project_id, file_path, project_uuid, file_size } = fileData;
-      if (!filename || !bt_project_id || !project_uuid) {
-        throw new Error("Missing required data for createNewFailedBTFile");
-      }
-      const query = `
-            INSERT INTO bt_files (
-              project_uuid, filename, bt_project_id, file_path, file_size, is_sent
-            )
-            VALUES (?, ?, ?, ?, ?, ?)
-          `;
-      const params = [project_uuid, filename, bt_project_id, file_path, file_size, 0];
-      db.run(query, params, function (err) {
-        if (err) {
-          log.error("Error adding new createNewFailedBTFile:", err.message);
-          reject({status: 400, error: err.message });
-        } else {
-          log.info(`createNewFailedBTFile added successfully`);
-          resolve({ status: 201, success: true, message: "success", filename: filename });
-        }
-      });
-    } catch (err) {
-      log.error("Error adding new createNewFailedBTFile:", err.message);
-      reject({ status: 400, error: err.message });
-    }
-  });
-});
-
-
-
-// Get backuptransfer data, bt_projects with bt_files on left join
-ipcMain.handle("getBackuptransferData", async (event, user_id) => {
-  if (!user_id) { throw new Error("Missing user_id for getBackuptransferData") }
-  const query = `
-    SELECT btp.*, btf.* 
-    FROM bt_projects btp
-    LEFT JOIN bt_files btf ON btp.bt_project_id = btf.bt_project_id
-    WHERE btp.user_id = ? AND btp.is_deleted = 0;
-  `;
-  const db = new sqlite3.Database(dbPath);
-  try {
-    const rows = await executeQueryWithRetry(db, query, [user_id]);
-    if (rows.length > 0) {
-      
-      const projects = [];
-      rows.forEach(row => {
-        let project = projects.find(p => p.bt_project_id === row.bt_project_id);
-        if (!project){
-          project = {
-            bt_project_id: row.bt_project_id,
-            created: row.created,
-            project_uuid: row.project_uuid,
-            projectname: row.projectname,
-            user_id: row.user_id, 
-            files: [] 
-          };
-          projects.push(project);
-        }
-        if (row.bt_file_id) {
-          project.files.push({
-            bt_file_id: row.bt_file_id,
-            project_uuid: row.project_uuid,
-            filename: row.filename,
-            file_path: row.file_path,
-            file_size: row.file_size,
-            is_sent: row.is_sent,
-            uploaded_at: row.uploaded_at
-          });
-        }
-      });
-      return { status: 200, success: true, message: "success", data: projects }
-    } else {
-      return { status: 204, success: true, message: "No data" } 
-    }
+      return { status: 200, task_id: task_id, message: 'Task deleted successfully' };
   } catch (error) {
-    log.info("Error fetching data (getBackuptransferData)");
-    return { status: 500, errorMessage: error.message }
-  } finally {
-    await closeDatabase(db);
-  }
-})
-
-
-
-
-
-
-// FILE REPORT
-
-//get all currents in timereport table by user_id
-ipcMain.handle("getAllTimereports", async (event, user_id) => {
-  const retrieveQuery = "SELECT * FROM timereport WHERE user_id = ? AND is_deleted = 0";
-  console.log("SQL Query:", retrieveQuery, "Parameters:", [user_id]);
-
-  const db = new sqlite3.Database(dbPath);
-
-  try {
-    const rows = await executeQueryWithRetry(db, retrieveQuery, [user_id]);
-
-    const allTimeReport = rows.map((row) => ({
-      id: row.id,
-      projectname: row.projectname,
-      starttime: row.starttime,
-      endtime: row.endtime,
-      breaktime: row.breaktime,
-      miles: row.miles,
-      tolls: row.tolls,
-      park: row.park,
-      other_fees: row.other_fees,
-      timereport_is_sent: row.is_sent,
-      timereport_is_sent_permanent: row.is_sent_permanent,
-      project_id: row.project_id,
-      project_date: row.project_date,
-      user_id: row.user_id,
-      created: row.created,
-    }));
-    log.info("allTimeReport", allTimeReport)
-    return { statusCode: 200, data: allTimeReport };
-  } catch (error) {
-    console.error("Error fetching data (getAllTimereports):", error);
-    return { statusCode: 0, errorMessage: error.message };
-  } finally {
-    await closeDatabase(db);
+      console.error('Error in deleteTask:', error);
+      return { status: 500, message: 'Failed to deleted task' };
   }
 });
 
 
 
-//get all currents in timereport table by user_id
-ipcMain.handle("getUnsubmittedTimeReport", async (event, user_id) => {
-  const now = new Date();
-  // Get the start of this month
-  const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  startOfThisMonth.setHours(0, 0, 0, 0);
-  // Get the start of last month
-  const startOfLastMonth = new Date(startOfThisMonth);
-  startOfLastMonth.setMonth(startOfThisMonth.getMonth() - 1);
-  startOfLastMonth.setHours(0, 0, 0, 0); 
-
-  const startOfLastMonthISO = startOfLastMonth.toISOString().slice(0, 19).replace('T', ' ');
-  const startOfThisMonthISO = startOfThisMonth.toISOString().slice(0, 19).replace('T', ' ');
-  console.log("Start of last month:", startOfLastMonthISO);
-  console.log("Start of this month:", startOfThisMonthISO);
-
-  // SQL query with dynamic date range
-  const retrieveQuery = `
-    SELECT * FROM timereport
-    WHERE user_id = ?
-      AND is_deleted = 0
-      AND project_date >= ? 
-      AND project_date < ?;
-  `;
-
-  const db = new sqlite3.Database(dbPath);
-
-  try {
-    const rows = await executeQueryWithRetry(db, retrieveQuery, [user_id, startOfLastMonthISO, startOfThisMonthISO]);
-
-    const UnsubmittedTimeReport = rows.map((row) => ({
-      id: row.id,
-      projectname: row.projectname,
-      starttime: row.starttime,
-      endtime: row.endtime,
-      breaktime: row.breaktime,
-      miles: row.miles,
-      tolls: row.tolls,
-      park: row.park,
-      other_fees: row.other_fees,
-      timereport_is_sent: row.is_sent,
-      timereport_is_sent_permanent: row.is_sent_permanent,
-      project_id: row.project_id,
-      project_date: row.project_date,
-      user_id: row.user_id,
-      created: row.created,
-    }));
-
-    console.log("Unsubmitted Time Report:", UnsubmittedTimeReport);
-    return { statusCode: 200, data: UnsubmittedTimeReport };
-  } catch (error) {
-    console.error("Error fetching data (getUnsubmittedTimeReport):", error);
-    return { statusCode: 0, errorMessage: error.message };
-  } finally {
-    await closeDatabase(db);
-  }
-});
 
 
-
-// //get projects from last report period by user_id
-ipcMain.handle("getLastReportPeriodProjects", async (event, user_id) => {
-  const now = new Date();
-  //get the start of this month
-  const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  startOfThisMonth.setHours(0, 0, 0, 0); 
-  //get the start of last month
-  const startOfLastMonth = new Date(startOfThisMonth);
-  startOfLastMonth.setMonth(startOfThisMonth.getMonth() - 1);
-  startOfLastMonth.setHours(0, 0, 0, 0); 
-  
-  const startOfLastMonthISO = startOfLastMonth.toISOString().slice(0, 19).replace('T', ' ');
-  const startOfThisMonthISO = startOfThisMonth.toISOString().slice(0, 19).replace('T', ' ');
-  console.log("Start of last month:", startOfLastMonthISO);
-  console.log("Start of this month:", startOfThisMonthISO);
-
-  const retrieveQuery = `
-    SELECT * FROM projects
-    WHERE user_id = ?
-      AND is_deleted = 0 
-      AND project_date >= ? 
-      AND project_date < ?;
-  `;
-
-  const db = new sqlite3.Database(dbPath);
-
-  try {
-    const rows = await executeQueryWithRetry(db, retrieveQuery, [user_id, startOfLastMonthISO, startOfThisMonthISO]);
-
-    const previousProjects = rows.map((row) => ({
-      project_id: row.project_id,
-      project_uuid: row.project_uuid,
-      projectname: row.projectname,
-      type: row.type,
-      anomaly: row.anomaly,
-      merged_teams: row.merged_teams,
-      unit: row.unit,
-      lang: row.lang,
-      alert_sale: row.alert_sale,
-      is_deleted: row.is_deleted,
-      is_sent: row.is_sent,
-      sent_date: row.sent_date,
-      user_id: row.user_id,
-      project_date: row.project_date,
-      created: row.created,
-    }));
-    
-    return { statusCode: 1, projects: previousProjects };
-  } catch (error) {
-    console.error("Error fetching projects:", error);
-    return { statusCode: 0, errorMessage: error.message };
-  } finally {
-    await closeDatabase(db);
-  }
-});
+// POST
 
 
-// set is_sent = 0
-ipcMain.handle("changeCompleted", async (event, args) => {
+//create new post
+ipcMain.handle("createNewPost", async (event, args) => {
   try {
     if (!args || typeof args !== "object") {
-      throw new Error("Invalid arguments received for changeCompleted");
-    }
-    const { project_id, user_id } = args;
-    if ( !project_id || !user_id ) {
-      throw new Error("Missing required data (project_id, user_id) for changeCompleted");
-    }
-      const updateResult = await db.run(
-        `
-        UPDATE timereport SET is_sent = 0 WHERE project_id = ? AND user_id = ?
-        `,
-        [project_id, user_id]
-      );
-      console.log(`Updated is_sent to 0 for project_id: ${project_id}`, updateResult);
-      // event.sender.send("changeCompleted-response", { statusCode: 200, success: true });
-      return { statusCode: 200, success: true }; 
-  } catch (err) {
-    console.error("Error inserting timereport:", err.message);
-    // event.sender.send("changeCompleted-response", { error: err.message });
-    return { error: err.message };
-  }
-});
-
-
-
-// mark activity as completed
-ipcMain.handle("markActivityAsCompleted", async (event, args) => {
-  try {
-    if (!args || typeof args !== "object") {
-      throw new Error("Invalid arguments received for markActivityAsCompleted");
-    }
-    const { starttime, endtime, breaktime, miles, tolls, park, other_fees, project_id, user_id, project_date, projectname } = args;
-
-    if ( !starttime || !endtime || !breaktime || !project_id || !user_id || !project_date || !projectname ) {
-      throw new Error("Missing required data for markActivityAsCompleted");
+      throw new Error("Invalid arguments received for createNewPost");
     }
 
-     // Insert the new user into the database
-     await db.run(
+    const { user_id, title, text } = args;
+
+    if (!user_id || !title || !text) {
+      throw new Error("Missing required user data for createNewPost");
+    }
+    // Insert the new user into the database
+    await db.run(
       `
-      INSERT INTO timereport (starttime, endtime, breaktime, miles, tolls, park, other_fees, is_sent, project_id, user_id, project_date, projectname)
-      VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?)
-      ON CONFLICT(project_id, user_id) 
-      DO UPDATE SET 
-        starttime = excluded.starttime,
-        endtime = excluded.endtime,
-        breaktime = excluded.breaktime,
-        miles = excluded.miles,
-        tolls = excluded.tolls,
-        park = excluded.park,
-        other_fees = excluded.other_fees,
-        is_sent = 1,
-        project_date = excluded.project_date,
-        projectname = excluded.projectname
+      INSERT INTO posts (user_id, title, text)
+      VALUES (?, ?, ?)
       `,
-      [starttime, endtime, breaktime, miles, tolls, park, other_fees, project_id, user_id, project_date, projectname],
+      [user_id, title, text],
     );
-
-    console.log("Timereport added successfully");
-    // event.sender.send("markActivityAsCompleted-response", { statusCode: 201, success: true });
-    return { statusCode: 201, success: true };
+    console.log("Post added successfully");
+    return { success: true, status: 201, message: "New post inserted successfully" };
+    
   } catch (err) {
-    console.error("Error inserting timereport:", err.message);
-    // Send error response to the frontend
-    // event.sender.send("markActivityAsCompleted-response", { error: err.message });
+    console.error("Error adding post:", err.message);
     return { error: err.message };
   }
 });
 
 
-// Mark all jobs in time span as completed by setting is_sent_permanent = 1
-ipcMain.handle("markAsCompletedPermanent", async (event, args) => {
-  const { project_id, user_id } = args;
-  log.info("project_id: ", project_id)
-  const updateQuery =
-    `
-    UPDATE timereport SET is_sent_permanent = 1 WHERE project_id = ? AND user_id = ?
-    `;
-  
-  const db = new sqlite3.Database(dbPath);
+//get all posts
+ipcMain.handle("getPosts", async (event, user_id) => {
+  if (!user_id) {throw new Error("Missing user_id for getPosts")}
+
+  const query = "SELECT * FROM posts WHERE user_id = ? AND is_deleted = 0";
+  try {
+    const posts = await new Promise((resolve, reject) => {
+      const db = new sqlite3.Database(dbPath);
+
+      db.all(query, [user_id], (error, rows) => {
+        if (error) {
+          reject({ statusCode: 500, errorMessage: error.message });
+        } else {
+          resolve({ statusCode: 200, posts: rows });
+        }
+      });
+    });
+
+    return posts;
+  } catch (error) {
+    console.error("Error fetching posts:", error);
+    return { statusCode: 500, errorMessage: error.message };
+  }
+});
+
+// Delete post
+ipcMain.handle('deletePost', async (event, args) => {
+  const { user_id, post_id } = args;
+  if (!user_id || !post_id) {
+      throw new Error("Missing required user data for deletePost");
+  }
+
+  const query = 'UPDATE posts SET is_deleted = 1 WHERE user_id = ? AND post_id = ?';
 
   try {
-    // Loop through each project_id and update is_sent_permanent
-    const result = await executeUpdateWithRetry(db, updateQuery, [project_id, user_id]);
-    await closeDatabase(db);
-    return { status: 200, result: result, message: "is_sent_permanent was set to 1" };
+      const result = await new Promise((resolve, reject) => {
+          db.run(query, [user_id, post_id], (error, results) => {
+              if (error) {
+                  console.error('Error deleting post:', error);
+                  reject(error);
+              } else {
+                  resolve(results);
+              }
+          });
+      });
+
+      return { status: 200, post_id: post_id, message: 'Post deleted successfully' };
   } catch (error) {
-    await closeDatabase(db);
-    console.error("Error setting is_sent_permanent to 1 in timereport table:", error);
-    return { status: 0, errorMessage: error.message };
+      console.error('Error in deletePost:', error);
+      return { status: 500, message: 'Failed to deleted post' };
   }
 });
 
 
-// delete row in timereport table
-ipcMain.handle("deleteTimereportRow", async (event, args) => {
-  const { project_id, user_id } = args;
-  log.info("project_id: ", project_id);
 
-  const updateQuery = `
-    UPDATE timereport SET is_deleted = 1 WHERE project_id = ? AND user_id = ?
+
+// SUBTASKS
+
+ipcMain.handle('getTaskWithSubtasks', async (event, task_id) => {
+  const query = `
+      SELECT 
+          t.task_id,
+          t.title AS task_title,
+          t.description AS task_description,
+          t.due_date AS task_due_date,
+          t.is_completed AS task_is_completed,
+          t.created AS task_created,
+          st.subtask_id,
+          st.title AS subtask_title,
+          st.description AS subtask_description,
+          st.due_date AS subtask_due_date,
+          st.is_completed AS subtask_is_completed,
+          st.created AS subtask_created
+      FROM tasks t
+      LEFT JOIN subtasks st ON t.task_id = st.task_id
+      WHERE t.task_id = ?
+      AND t.is_deleted = 0
   `;
 
-  const db = new sqlite3.Database(dbPath);
-
   try {
-    const result = await executeUpdateWithRetry(db, updateQuery, [project_id, user_id]);
-    log.info("Row updated successfully: ", result);
+      const rows = await new Promise((resolve, reject) => {
+          db.all(query, [task_id], (error, result) => {
+              if (error) {
+                  console.error('Error fetching task with subtasks:', error);
+                  reject(error);
+              } else {
+                  resolve(result);
+              }
+          });
+      });
 
-    return { status: 200, result: result, message: "Deleted", project_id: project_id };
-  } catch (error) {
-    console.error("Error deleting row in timereport table:", error);
-    return { status: 0, errorMessage: error.message };
-  } finally {
-    db.close((err) => {
-      if (err) {
-        console.error("Error closing the database:", err.message);
-      } else {
-        log.info("Database connection closed.");
+      if (!rows.length) {
+          return { status: 404, message: 'Task not found' };
       }
-    });
+
+      const taskData = {
+          task_id: rows[0].task_id,
+          task_title: rows[0].task_title,
+          task_description: rows[0].task_description,
+          task_due_date: rows[0].task_due_date,
+          task_is_completed: rows[0].task_is_completed,
+          task_created: rows[0].task_created,
+          subtasks: []
+      };
+
+      rows.forEach(row => {
+          if (row.subtask_id) {
+              taskData.subtasks.push({
+                  subtask_id: row.subtask_id,
+                  subtask_title: row.subtask_title,
+                  subtask_description: row.subtask_description,
+                  subtask_due_date: row.subtask_due_date,
+                  subtask_is_completed: row.subtask_is_completed,
+                  subtask_created: row.subtask_created
+              });
+          }
+      });
+
+      return { status: 200, data: taskData };
+  } catch (error) {
+      console.error('Error:', error);
+      return { status: 500, message: 'Failed to fetch task with subtasks' };
   }
 });
 
+//create new subtask
+ipcMain.handle("createNewSubtask", async (event, args) => {
+  try {
+    if (!args || typeof args !== "object") {
+      throw new Error("Invalid arguments received for createNewSubtask");
+    }
 
+    const { task_id, title } = args;
 
-
-
-
-
-
-
-
-
-
+    if (!task_id || !title) {
+      throw new Error("Missing required user data for createNewSubtask");
+    }
+    await db.run(
+      `
+      INSERT INTO subtasks (task_id, title)
+      VALUES (?, ?)
+      `,
+      [task_id, title],
+    );
+    console.log("Subtask added successfully");
+    return { success: true, status: 201, message: "New subtask inserted successfully" };
+    
+  } catch (err) {
+    console.error("Error adding post:", err.message);
+    return { error: err.message };
+  }
+});

@@ -43,34 +43,61 @@ body {
 }
 
 
+
+
+
+/* FORM / INPUT / TEXTAREA / SELECT */
+
+.form-group {
+    display: flex;
+    flex-direction: column;  
+    margin-top: -0.5em;
+  }
+
 .form-input-field {
-    width: 50%;
-    height: 2.5em;
+    width: 80%;
+    height: 2em;
     padding: 0.3em;
-    margin-bottom: 0.4em;
+    font-size: 0.75em;
     border-radius: 3px;
+    background-color: #ececec;
     border: 1px solid rgb(175, 175, 175);
     outline: none;
 }
-
-
 .form-input-field::placeholder {
     color: rgb(168, 168, 168);
     font-size: 0.85em;
 }
 
+.textarea{
+    width: 90%;
+    padding: 0.3em;
+    font-size: 0.75em;
+    border-radius: 3px;
+    background-color: #ececec;
+    border: 1px solid rgb(175, 175, 175);
+    outline: none;
+}
 textarea::placeholder {
     color: rgb(168, 168, 168);
     font-size: 0.9em;
 }
 
 .form-select{
-    height: 1.9em;
-    width: 11.8em;
+    height: 2em;
+    font-size: 0.75em;
+    width: 11em;
     border-radius: 3px;
+    background-color: #ececec;
     border: 1px solid rgb(175, 175, 175);
     outline: none;
+    padding-left: 0.2em ;
 }
+
+
+
+
+
 
 
 .page-loading {

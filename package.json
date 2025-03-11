@@ -1,10 +1,10 @@
 {
-  "name": "photographerportal",
-  "productName": "Photographer Portal",
-  "version": "1.0.4",
-  "description": "Photographer Portal Application",
+  "name": "myelectronapp",
+  "productName": "MyElectronApp",
+  "version": "1.0.1",
+  "description": "MyElectronApp",
   "main": "./out/main/index.js",
-  "author": "Photographer Portal",
+  "author": "Lucas H. Schuber",
   "homepage": "https://www.electronjs.org",
   "scripts": {
     "format": "prettier --write .",

@@ -1,5 +1,6 @@
 /* Components */
 
+/* FEEDBACK MESSAGE */
 .feedback-message {
   z-index: 40;
   position: fixed;
@@ -19,6 +20,117 @@
   left: 1em; 
   opacity: 1;
 }
+
+
+
+
+
+/* ADDNEWTASK */
+
+.addnewtask{
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 27%;
+  height: 99vh;
+  background-color: #efefef;
+  color: white;
+  border-radius: 5px;
+  margin: 0.2em;
+  z-index: 30;
+  overflow-y: auto;
+  padding: 5em 1.5em;
+}
+.addnewtask h6{
+  color: black;
+  font-size: 0.95em;
+}
+.addnewtask label{
+  color: rgb(39, 39, 39);
+  font-size: 0.75em;
+  font-weight: 600;
+}
+
+
+
+/* TASKMANAGER */
+.taskmanager{
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 27%;
+  height: 99vh;
+  background-color: #efefef;
+  border-radius: 5px;
+  margin: 0.2em;
+  z-index: 30;
+  overflow-y: auto;
+  padding: 5em 1.5em;
+}
+.taskmanager h6{
+  color: rgb(58, 58, 58);
+  font-size: 0.8em;
+}
+.taskmanager p{
+  color: rgb(58, 58, 58);
+  font-size: 0.8em;
+}
+.taskmanager label{
+  color: rgb(58, 58, 58);
+  font-size: 0.75em;
+  font-weight: 600;
+}
+
+
+
+/* TASKPROGRESS */
+.progress-bar-container {
+  width: 6em;
+  height: 4px;
+  background-color: #e0e0e0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: #6a6a6a;  
+  transition: width 0.3s ease-in-out;
+}
+
+
+
+/* TASKDETAILS */
+.taskdetails{
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 27%;
+  height: 99vh;
+  background-color: #efefef;
+  border-radius: 5px;
+  margin: 0.2em;
+  z-index: 30;
+  overflow-y: auto;
+  padding: 5em 1.5em;
+}
+.taskdetails h5{
+  color: rgb(58, 58, 58);
+  font-size: 1em;
+}
+.taskdetails h6{
+  color: rgb(58, 58, 58);
+  font-size: 0.8em;
+}
+.taskdetails p{
+  color: rgb(58, 58, 58);
+  font-size: 0.8em;
+}
+.subtask-list li{
+  font-size: 0.8em;
+}
+
+
 
 
 /* SWEET ALERT STYLING */
