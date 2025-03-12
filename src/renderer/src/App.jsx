@@ -18,6 +18,9 @@ import List from "./pages/list"
 import PostItWall from "./pages/postItWall";
 import Archive from "./pages/archive";
 
+import { TaskProvider } from "./context/taskContext"; 
+
+
 //importing css styles
 import "./App.css";
 import './assets/css/global.css';
@@ -31,9 +34,11 @@ import './assets/css/sidemenu.css';
 
 function App() {
   return (
-    <HashRouter>
-      <MainContent />
-    </HashRouter>
+    <TaskProvider>
+      <HashRouter>
+        <MainContent />
+      </HashRouter>
+    </TaskProvider>
   );
 }
 
@@ -43,7 +48,6 @@ function MainContent() {
 
   return (
     <>
-
       {!hiddenPaths.includes(location.pathname) && <SideMenu />}
 
       <div className="main-content">

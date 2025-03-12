@@ -1,5 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useTaskContext } from "../context/taskContext";
 
 import convertToLocalTime from "../assets/js/convertToLocalTime"
 
@@ -14,6 +15,7 @@ function PostItWall() {
     const [title, setTitle] = useState("");
     const [text, setText] = useState("");
 
+    const { triggerTaskUpdate } = useTaskContext();
 
     // Method to fetch posts
     const fetchPosts = async () => {
@@ -51,6 +53,7 @@ function PostItWall() {
                 setTitle("")
                 setText("")
                 fetchPosts()
+                triggerTaskUpdate(); 
             }
         } catch (error) {
             console.log('error', error);       

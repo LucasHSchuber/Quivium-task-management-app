@@ -1,11 +1,13 @@
 import React, { useEffect, useRef } from "react";
-
+import { useTaskContext } from "../context/taskContext";
 
 const ListMenu = ({ listId, setShowListMenu, onSuccess }) => {
     const menuRef = useRef(null);
     console.log('listId', listId);
 
-    // 
+    const { triggerTaskUpdate } = useTaskContext();
+
+     
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -34,6 +36,7 @@ const ListMenu = ({ listId, setShowListMenu, onSuccess }) => {
             console.log('archiveResponse', archiveResponse);
             if (archiveResponse.status === 200) {
                 onSuccess()
+                triggerTaskUpdate();
             }
         } catch (error) {
             console.log('error', error);

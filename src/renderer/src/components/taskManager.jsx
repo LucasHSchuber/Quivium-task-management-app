@@ -142,6 +142,7 @@ function TaskManager({ show, list_id, taskId, due_date, onSuccess, onSuccessDele
             {isEditing ? (
                     <textarea
                         className="textarea"
+                        rows={8}
                         placeholder="New description"
                         value={newDescription}
                         onChange={(e) => setNewDescription(e.target.value)}

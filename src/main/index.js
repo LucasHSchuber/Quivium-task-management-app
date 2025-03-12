@@ -1066,36 +1066,74 @@ ipcMain.handle("createNewList", async (event, args) => {
 
 //get all lists by user_id
 ipcMain.handle("getAllLists", async (event, user_id) => {
-  const query = "SELECT * FROM lists WHERE user_id = ? AND is_deleted = 0 AND archived = 0";
+  const query = `
+    SELECT 
+      l.list_id, l.name, l.color, l.is_deleted AS list_deleted, 
+      l.archived, l.archived_date, l.created AS list_created, 
+      l.user_id,
+      t.task_id, t.title, t.description, t.due_date, 
+      t.updated AS task_updated, t.is_deleted AS task_deleted, 
+      t.is_completed, t.created AS task_created
+    FROM lists l
+    LEFT JOIN tasks t ON l.list_id = t.list_id AND t.is_deleted = 0
+    WHERE l.user_id = ? AND l.is_deleted = 0 AND l.archived = 0
+    ORDER BY l.list_id, t.created
+  `;
+
   try {
     const lists = await new Promise((resolve, reject) => {
       const db = new sqlite3.Database(dbPath);
 
       db.all(query, [user_id], (error, rows) => {
-        if (error != null) {
+        if (error) {
           db.close();
-          reject({ statusCode: 400, errorMessage: error });
+          return reject({ statusCode: 400, errorMessage: error.message });
         }
 
-        const lists = rows.map((row) => ({
-          list_id: row.list_id,
-          name: row.name,
-          color: row.color,
-          is_deleted: row.is_deleted,
-          created: row.created,
-          user_id: row.user_id,
-        }));
+        const listMap = new Map();
 
-        resolve({ status: 200, lists: lists });
+        rows.forEach(row => {
+          if (!listMap.has(row.list_id)) {
+            listMap.set(row.list_id, {
+              list_id: row.list_id,
+              name: row.name,
+              color: row.color,
+              is_deleted: row.list_deleted,
+              archived: row.archived,
+              archived_date: row.archived_date,
+              created: row.list_created,
+              user_id: row.user_id,
+              tasks: [] 
+            });
+          }
+
+          if (row.task_id) {
+            listMap.get(row.list_id).tasks.push({
+              task_id: row.task_id,
+              title: row.title,
+              description: row.description,
+              due_date: row.due_date,
+              updated: row.task_updated,
+              is_deleted: row.task_deleted,
+              is_completed: row.is_completed,
+              created: row.task_created
+            });
+          }
+        });
+
+        db.close();
+        resolve(Array.from(listMap.values()));
       });
     });
-    return lists;
-    // return { statusCode: 200, lists: lists }; 
+
+    return { status: 200, lists };
   } catch (error) {
-    console.error("Error fetching user data:", error);
+    console.error("Error fetching lists:", error);
     return { statusCode: 500, errorMessage: error.message || "Internal Server Error" };
   }
 });
+
+
 
 // Get list by list id
 ipcMain.handle("getListById", async (event, list_id, user_id) => {
@@ -1200,6 +1238,35 @@ ipcMain.handle("getArchivedLists", async (event, user_id) => {
 });
 
 
+// Move lists back to lists from archived
+ipcMain.handle('moveBackToLists', async (event, user_id, list_id) => {
+  
+  if (!user_id || !list_id) {
+    throw new Error("Invalid arguments received for moveBackToLists");
+  }
+
+  const query = 'UPDATE lists SET archived = 0 WHERE user_id = ? AND list_id = ?';
+  try {
+      const result = await new Promise((resolve, reject) => {
+          db.run(query, [user_id, list_id], (error, results) => {
+              if (error) {
+                  console.error('Error updating lists:', error);
+                  reject(error);
+              } else {
+                  resolve(results);
+              }
+          });
+      });
+      
+    return { status: 200, list_id: list_id, message: 'List removed from archived successfully' };
+  } catch (error) {
+      console.error('Error in moveBackToLists:', error);
+      return { status: 500, message: 'Failed to remove list from archived' };
+  }
+});
+
+
+
 
 
 
@@ -1235,42 +1302,102 @@ ipcMain.handle("createNewTask", async (event, args) => {
 });
 
 
-//get all lists by user_id
 ipcMain.handle("getAllTasks", async (event, user_id, list_id) => {
-  const query = "SELECT * FROM tasks WHERE user_id = ? AND list_id = ? AND is_deleted = 0";
+  if (!user_id || !list_id) {throw new Error("Missing required parameters for getAllTasks")}
+  const query = `
+    SELECT 
+      t.task_id, t.title, t.description, t.due_date, 
+      t.updated, t.is_completed, t.list_id,
+      st.subtask_id, st.title AS subtask_title, st.description AS subtask_description, 
+      st.due_date AS subtask_due_date, st.is_completed AS subtask_completed, st.created AS subtask_created
+    FROM tasks t
+    LEFT JOIN subtasks st ON t.task_id = st.task_id 
+    WHERE t.user_id = ? AND t.list_id = ? AND t.is_deleted = 0
+    ORDER BY t.due_date
+  `;
   try {
     const tasks = await new Promise((resolve, reject) => {
       const db = new sqlite3.Database(dbPath);
 
       db.all(query, [user_id, list_id], (error, rows) => {
-        if (error != null) {
+        if (error) {
           db.close();
-          reject({ statusCode: 400, errorMessage: error });
+          return reject({ status: 400, errorMessage: error.message });
         }
+        const taskMap = new Map();
+        rows.forEach(row => {
+          if (!taskMap.has(row.task_id)) {
+            taskMap.set(row.task_id, {
+              task_id: row.task_id,
+              title: row.title,
+              description: row.description,
+              due_date: row.due_date,
+              updated: row.updated,
+              is_completed: row.is_completed,
+              subtasks: [] 
+            });
+          }
 
-        const tasks = rows.map((row) => ({
-          task_id: row.task_id,
-          title: row.title,
-          description: row.description,
-          due_date: row.due_date,
-          updated: row.updated,
-          is_deleted: row.is_deleted,
-          is_completed: row.is_completed,
-          created: row.created,
-          user_id: row.user_id,
-          list_id: row.list_id,
-        }));
+          if (row.subtask_id) {
+            taskMap.get(row.task_id).subtasks.push({
+              subtask_id: row.subtask_id,
+              title: row.subtask_title,
+              description: row.subtask_description,
+              due_date: row.subtask_due_date,
+              is_completed: row.subtask_completed,
+              created: row.subtask_created
+            });
+          }
+        });
 
-        resolve({ status: 200, tasks: tasks });
+        db.close();
+        resolve(Array.from(taskMap.values())); 
       });
     });
-    return tasks;
-    // return { statusCode: 200, lists: lists }; 
+
+    return { status: 200, tasks: tasks };
   } catch (error) {
     console.error("Error fetching tasks:", error);
     return { statusCode: 500, errorMessage: error.message || "Internal Server Error" };
   }
 });
+
+// //get all lists by user_id
+// ipcMain.handle("getAllTasks", async (event, user_id, list_id) => {
+//   const query = "SELECT * FROM tasks WHERE user_id = ? AND list_id = ? AND is_deleted = 0";
+//   try {
+//     const tasks = await new Promise((resolve, reject) => {
+//       const db = new sqlite3.Database(dbPath);
+
+//       db.all(query, [user_id, list_id], (error, rows) => {
+//         if (error != null) {
+//           db.close();
+//           reject({ statusCode: 400, errorMessage: error });
+//         }
+
+//         const tasks = rows.map((row) => ({
+//           task_id: row.task_id,
+//           title: row.title,
+//           description: row.description,
+//           due_date: row.due_date,
+//           updated: row.updated,
+//           is_deleted: row.is_deleted,
+//           is_completed: row.is_completed,
+//           created: row.created,
+//           user_id: row.user_id,
+//           list_id: row.list_id,
+//         }));
+
+//         resolve({ status: 200, tasks: tasks });
+//       });
+//     });
+//     return tasks;
+//     // return { statusCode: 200, lists: lists }; 
+//   } catch (error) {
+//     console.error("Error fetching tasks:", error);
+//     return { statusCode: 500, errorMessage: error.message || "Internal Server Error" };
+//   }
+// });
 
 
 // Get task by task id

@@ -51,6 +51,7 @@ function TaskDetails({ show, detailsTask, onSuccess }) {
                 console.log('Successfully created news subtask');
                 setNewSubtask("")
                 fetchTaskWithSubtasks()
+                onSuccess()
             }
         } catch (error) {
             console.log('error', error);
@@ -63,33 +64,30 @@ function TaskDetails({ show, detailsTask, onSuccess }) {
 
     return (
         <div className="taskdetails">
-            <h5 className="mb-5" style={{ fontWeight: "900", fontSize: "1.1em" }}>Task Details</h5>
-
-            <div>
-                <div className="mb-3">
-                    <h6><b>{taskWithSubtasks.task_title}</b></h6>    
-                    <p>{taskWithSubtasks.task_description}</p>
+            <div className="taskdetails-box">
+                <h5 className="mb-5" style={{ fontWeight: "900", fontSize: "1.1em" }}>Task Details</h5>
+                <div className="pb-4">
+                    <h6><b>Title:</b> {taskWithSubtasks.task_title}</h6>    
+                    <h6 className="my-3"><b>Description:</b> {taskWithSubtasks.task_description}</h6>
                     <h6><b>Due Date:</b> {taskWithSubtasks.task_due_date || "No due date"}</h6>
                 </div>
-                <hr></hr>
-                <div className="mb-3">
-                    <h6><b>Sub Tasks:</b></h6>
-                    {taskWithSubtasks.subtasks && taskWithSubtasks.subtasks.length > 0 ? (
-                    <ul className="subtask-list">
-                        {taskWithSubtasks.subtasks.map(st => (
-                            <li key={st.subtask_id}>{st.subtask_title}</li>
-                        ))}
-                    </ul>
-                    ) : (
-                        <p><em>No subtasks</em></p>
-                    )}
-                    <div className="d-flex">
-                        <input className="form-input-field" placeholder="Add new subtask" value={newSubtask} onChange={(e) => setNewSubtask(e.target.value)}></input>
-                        <button className="createsubtask-button" onClick={createSubtask}><FontAwesomeIcon title="Create subtask" icon={faPlus} size="xs"/></button>
-                    </div>
-                </div>
-
+                {/* <hr style={{ marginBottom: "0" }}></hr> */}
+            </div>   
+            <div className="mb-3 subtask-box">
+                <h6><b>Sub Tasks:</b></h6>
+                {taskWithSubtasks.subtasks && taskWithSubtasks.subtasks.length > 0 ? (
+                <ul className="subtask-list">
+                    {taskWithSubtasks.subtasks.map(st => (
+                        <li key={st.subtask_id}>{st.subtask_title}</li>
+                    ))}
+                </ul>
+                ) : (
+                    <p><em>No subtasks</em></p>
+                )}
+                <input className="form-input-field" placeholder="Add new subtask" value={newSubtask} onChange={(e) => setNewSubtask(e.target.value)}></input>
+                <button className="createsubtask-button" onClick={createSubtask}><FontAwesomeIcon title="Create subtask" icon={faPlus} size="xs"/></button>
             </div>
+           
         </div>
     );
 }

@@ -28,7 +28,7 @@
   text-align: center;
   width: 30vh;
   height: 4px;
-  background-color: #e0e0e0;
+  background-color: #ffffff;
   margin-left: 30%;
 }
 
@@ -116,7 +116,8 @@
 /* UPDATEVERSION WINDOW */
 
 .updateapplication_window-wrapper{
-  background-color: #232323;
+  /* background-color: #232323; */
+  background-color: #67F3B2;
   min-height: 100vh !important;
 }
 .updateapplicationspinning-logo-login {
@@ -131,12 +132,11 @@
   animation: spin 2.5s ease-in-out infinite;
 }
 .updateapplicationspinning-logo-login p{
-  color: rgb(251, 251, 251);
+  color: rgb(38, 38, 38);
 }
 
 /* Progress bar (percentage) */
 .progress-bar-updatewindow {
-  /* margin-top: 1.5em; */
   width: 30% !important;
 }
 .progress-bar-updatewindow {
@@ -159,8 +159,18 @@
 
 /* LOGIN_WINDOW */
 
+.loading-login{
+  background-color: #67F3B2 !important;
+  height: 100vh;
+}
+.signing-in{
+  background-color: #67F3B2 !important;
+  height: 100vh;
+}
 .login_window-wrapper {
-  background-color: rgb(248, 248, 248);
+  /* background-color: rgb(248, 248, 248); */
+  background-color: #67F3B2;
+  color: rgb(34, 34, 34);
   justify-content: center;
   height: 100vh;
 }
@@ -237,33 +247,46 @@
 
 
 /* LISTS */
+.listinfo{
+  max-width: 50%;
+}
 .list-color{
-  padding: 0.2em 0 0.2em 0.7em;
-  color: white;
+  text-align: center;
+  padding: 0.2em 0 0.2em 0;
+  color: rgb(30, 15, 15);
   width: 2em;
   height: 2em;
   border-radius: 4px;
 }
 .task-box{
   width: 55%;
-  height: 1.9em;
+  /* height: 1.9em; */
+  /* max-height: fit-content; */
   background-color: #f2f2f2;
   border-radius: 3px;
-  padding: 0.5em 1em 0 1em;
+  padding: 0.6em 1em 0 1em;
   margin-bottom: 0.1em;
   cursor: pointer;
   transition: 0.2s;
-  color: rgb(62, 62, 62);
+  color: rgb(62, 62, 62) !important;
 }
 .task-box:hover{
-  background-color: #ededed;
+  background-color: rgb(235, 235, 235);
 }
 .task-box h6{
-  font-size: 0.85em;
+  font-size: 0.75em;
+  font-weight: 600;
 }
 .task-box-done{
-  background-color: #fafafa;
-  color: rgb(212, 212, 212);
+  background-color: #fafafa ;
+  color: rgb(212, 212, 212) !important;
+}
+.task-box-active{
+  background-color: #e2e2e2 !important;
+}
+.task-box-active-done{
+  background-color: #e2e2e2;
+  color: rgb(195, 195, 195) !important;
 }
 
 .checkbox {
@@ -274,14 +297,36 @@
   background-color: #fff;
   border: 1px solid #ccc;
   margin-right: 10px; 
-  margin-top: 2px;
+  margin-top: 1px;
   cursor: default;
 }
-/* Style when checkbox is checked */
 .checkbox:checked {
   background-color: #8a8a8a; 
   border-color: #676767; 
 }
+.subtaskamount{
+  text-align: center;
+  height: 1.5em;
+  background-color: #e9e9e9; 
+  padding: 0.2em 0.4em 0 0.4em;
+  margin-top: -0.2em;
+  margin-right: 0.75em;
+  text-decoration: none !important;
+  border-radius: 2px;
+  font-size: 0.8em !important;
+}
+.arrowright-task-box{
+  margin-top: "1em" !important;
+}
+
+.edittask-icon{
+  color: rgb(78, 78, 78);
+  transition: 0.1s;
+}
+.edittask-icon:hover{
+  color: rgb(137, 137, 137);
+}
+
 
 
 
@@ -350,9 +395,25 @@
   background-color: inherit;
   border: none;
   border: 1px solid rgb(239, 239, 239);
-  /* height: 85%; */
 }
 .newpostitnote-text:focus{
   outline: none;
   border: 1px solid #67F3B2;
+}
+
+
+
+
+/* ARCHIVED */
+
+.movefromarchived-icon{
+  height: 1.2em;
+  font-size: 0.6em;
+  border-radius: 2px;
+  border: 1px solid rgb(153, 153, 153);
+  padding: 0.2em;
+}
+.movefromarchived-icon:hover{
+  background-color: rgb(221, 221, 221);
+  border: 1px solid rgb(155, 155, 155);
 }

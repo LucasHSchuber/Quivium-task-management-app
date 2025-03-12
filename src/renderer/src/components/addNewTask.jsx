@@ -65,7 +65,9 @@ useEffect(() => {
             setTaskDescription("");
             setDueDate("");
             setSubtasks([]);
-            onSuccess()
+            setTimeout(() => {
+              onSuccess()
+            }, 250);
         }
     } catch (error) {
         console.log('error', error);
@@ -101,17 +103,6 @@ useEffect(() => {
             placeholder="Task description"
           />
         </div>
-
-        {/* <div className="form-group">
-          <label>Subtask:</label>
-          <input
-            className="form-input-field"
-            type="text"
-            value={subtaskName}
-            onChange={(e) => setSubtaskName(e.target.value)}
-            placeholder="Subtask name"
-          />
-        </div> */}
 
         <div className="form-group">
           <label>Due Date:</label>

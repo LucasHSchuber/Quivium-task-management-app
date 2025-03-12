@@ -50,7 +50,7 @@ const api = {
   deleteList: (listId, user_id) => ipcRenderer.invoke("deleteList", listId, user_id), // delete list 
   setListAsArchived: args => ipcRenderer.invoke("setListAsArchived", args), // set list as archived
   getArchivedLists: user_id => ipcRenderer.invoke("getArchivedLists", user_id), // fetch all archived list from sqlite
-  
+  moveBackToLists: (user_id, list_id) => ipcRenderer.invoke("moveBackToLists", user_id, list_id), // Move back to lists
 
   // TASKS
   createNewTask: args => ipcRenderer.invoke("createNewTask", args), // create new task

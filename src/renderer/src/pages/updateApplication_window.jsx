@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 // import axios from "axios";
 // import { useNavigate } from "react-router-dom";
 import fp from "../assets/images/logo_white.png";
+import q from "../assets/images/q.png"
 
 
 function UpdateApplication_window() {
@@ -72,7 +73,7 @@ function UpdateApplication_window() {
     <div className="updateapplication_window-wrapper">
        <div className="updateapplicationspinning-logo-login">
 
-          {/* <img src={fp} alt="fotografportalen" /> */}
+          <img src={q} alt="fotografportalen" />
 
           <p className="mt-3"><em>{!errorMessage ? message : ""}</em></p>
           <p style={{ fontSize: "0.5em" }}>{errorMessage ? errorMessage : ""}</p>

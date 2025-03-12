@@ -1,4 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {  } from "@fortawesome/free-regular-svg-icons";
+import { faCheck } from "@fortawesome/free-solid-svg-icons";
+
 
 function TaskProgress({ tasks }) {
     // Calculate completed tasks
@@ -14,7 +18,15 @@ function TaskProgress({ tasks }) {
                     style={{ width: `${progress}%` }}
                 ></div>
             </div>
-            <p style={{ fontSize: "0.8em", marginTop: "-0.5em", marginLeft: "1em", fontWeight: "900" }}>{completedTasks}/{totalTasks}</p>
+            <p style={{ fontSize: "0.8em", marginTop: "-0.5em", marginLeft: "1em", fontWeight: "900" }}>
+                {completedTasks === totalTasks && totalTasks > 0 ? (
+                    <>
+                    {completedTasks}/{totalTasks} <FontAwesomeIcon className="ml-1" icon={faCheck} size="sm" />
+                    </>
+                ) : (
+                    `${completedTasks}/${totalTasks}`
+                )}
+            </p>
         </div>
     );
 }

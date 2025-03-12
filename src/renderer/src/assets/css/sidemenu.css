@@ -5,7 +5,7 @@
     position: fixed;
     top: 0;
     left: 0;
-    width: 13em;
+    width: 13.5em;
     height: 99vh;
     background-color: #ececec;
     color: white;
@@ -48,23 +48,32 @@
     font-weight: 600;
 }
 
-.sidemenu-menu{
-    margin-left: 1em;
-}
 .sidemenu-menu h6{
     font-weight: 400;
     font-size: 0.8em;
 }
 
+.navlink {
+    text-decoration: none !important;
+    color: inherit;  
+}
+.navlink:hover {
+    text-decoration: none !important; 
+}
+
 .link-box{
     position: relative;
     height: 1.35em;
-    width: 90%;
+    width: 95%;
     margin-bottom: 0.3em;
     border-radius: 3px;
-    background-color: rgb(230, 230, 230);
+    background-color: rgb(232, 232, 232);
     padding: 0.1em 0.5em;
 }
+.link-box:hover{
+    background-color: rgb(226, 226, 226);
+}
+
 .link-box p{
     color: rgb(89, 89, 89);
     font-size: 0.7em;
@@ -74,9 +83,12 @@
     margin-top: 0.2em;
     margin-right: 1em;
 }
+.link-box-active{
+    background-color: rgb(219, 219, 219) !important;
+}
 
 .liscolor{
-    margin-top: 0.15em;
+    margin-top: 0.18em;
     height: 0.8em;
     width: 0.8em;
     border-radius: 30px;
@@ -87,11 +99,35 @@
     height: 1.8em;
     font-size: 0.7em;
     padding: 0.2em;
-    background-color: #f6f6f6;
+    background-color: #efefef;
     border: 1px solid gray;
-    border-radius: 3px;
+    border-radius: 2px;
 }
-
+.newlist-input:focus{
+    outline: none;
+}
+.taskamount{
+    height: 1.45em;
+    background-color: #e3e3e3; 
+    padding: 0 0.4em;
+    margin-top: 0.13em;
+    text-decoration: none !important;
+    border-radius: 2px;
+    font-size: 0.65em !important;
+}
+.list-minimenu{
+    color: black;
+    padding: 0.1em;
+    width: 1em; 
+    margin-top: 0.16em; 
+    margin-right: -0.5em;
+    border-radius: 2px;
+    transition: 0.2s;
+}
+.list-minimenu:hover{
+    color: rgb(47, 47, 47);
+    background-color: rgb(210, 210, 210);
+}
 
 
 

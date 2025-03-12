@@ -78,18 +78,44 @@
   color: black;
   text-decoration: underline;
 }
+.addlist-button:focus{
+  outline: none;
+}
+
+.addtask-button2{
+  color: rgb(65, 65, 65);
+  background-color: inherit;
+  border: 1px solid rgb(166, 166, 166);
+  padding: 0.4em 0.5em;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.addtask-button2:hover{
+  background-color: rgb(239, 239, 239);
+  border: 1px solid rgb(153, 153, 153);
+}
+.addtask-button2:focus{
+  outline: none;
+}
+
 .createlist-button{
   color: rgb(65, 65, 65);
   height: 1.8em;
   font-size: 0.7em;
-  background-color: white;
+  border: 1px solid rgb(181, 181, 181);
   border: 1px solid gray;
   cursor: pointer;
   transition: 0.2s;
 }
 .createlist-button:hover{
-  background-color: rgb(236, 236, 236);
+  background-color: #67F3B2;
 }
+.createlist-button:focus{
+  outline: none;
+  border: 1px solid rgb(53, 53, 53);
+}
+
 
 
 
@@ -99,8 +125,8 @@
   width: 12em;
   border: none;
   font-size: 0.8em;
-  background-color: rgb(0, 193, 125);
-  color: white;
+  background-color: #67F3B2;
+  color: rgb(47, 47, 47);
   padding: 0.4em 3em;
   font-weight: 900;
   border-radius: 3px;
@@ -149,10 +175,10 @@
 
 /* TASKDETAILS */
 .createsubtask-button{
-  font-size: 0.9em;
+  font-size: 0.8em;
   margin-left: 0.2em;
-  padding: 0.1em 0.5em 0.3em 0.5em;
-  height: 1.65em;
+  padding: 0.15em 0.5em 0.3em 0.5em;
+  height: 1.88em;
   border: 1px solid rgb(181, 181, 181);
   border-radius: 2px;
   transition: 0.2s;
@@ -160,6 +186,10 @@
 }
 .createsubtask-button:hover{
   background-color: #67F3B2;
+}
+.createsubtask-button:focus{
+  outline: none;
+  border: 1px solid rgb(72, 72, 72);
 }
 
 

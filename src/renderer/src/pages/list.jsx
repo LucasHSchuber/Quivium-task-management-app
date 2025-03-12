@@ -1,16 +1,18 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import AddNewTask from "../components/addNewTask";
+import { useTaskContext } from "../context/taskContext";
+import { useNavigate } from "react-router-dom";  
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {  } from "@fortawesome/free-regular-svg-icons";
-import { faArrowRight, faPenToSquare } from "@fortawesome/free-solid-svg-icons";
+import { faArrowRight, faPenToSquare, faPlus, faNoteSticky, faSquareCheck } from "@fortawesome/free-solid-svg-icons";
+
+import AddNewTask from "../components/addNewTask";
 import TaskManager from "../components/taskManager";
 import TaskProgress from "../components/taskProgress";
 import TaskDetails from "../components/taskDetails";
 
 
-// import Sidemenu from "../components/sidemenu";
 
 function List() {
     const { list_id } = useParams();
@@ -19,16 +21,20 @@ function List() {
     const [list, setList] = useState(null);
     const [listColor, setListColor] = useState("");
     const [tasks, setTasks] = useState([]);
-    const [newTaskName, setNewTaskName] = useState(false);
     const [showNewTask, setShowNewTask] = useState(false);
     const [detailsTask, setDetailsTask] = useState({});
 
     const [showTaskManager, setShowTaskManager] = useState(false);
     const [showTaskDetails, setShowTaskDetails] = useState(false);
 
-    console.log('list_id', list_id);
+    const navigate = useNavigate(); 
+    const { triggerTaskUpdate } = useTaskContext();
 
-    const onSuccessNewTask = () => {fetchAllTasks()}
+
+    const onSuccessNewTask = () => {
+        fetchAllTasks()
+        triggerTaskUpdate(); 
+    }
     const onSuccessDelete = () => {fetchAllTasks(), setShowTaskManager(false)}
 
 
@@ -77,6 +83,29 @@ function List() {
     }, [list_id]);
 
 
+    // Method to set list as archived
+    const handleArchiveList = async (listId) => {
+        console.log('Archive list with ID:', listId);
+        const user_id = localStorage.getItem("user_id")
+        const data = {
+            user_id: user_id,
+            list_id: listId,
+        }
+        console.log('data', data);
+        try {
+            const archiveResponse = await window.api.setListAsArchived(data)
+            console.log('archiveResponse', archiveResponse);
+            if (archiveResponse.status === 200) {
+                triggerTaskUpdate()
+                navigate("/archive")
+            }
+        } catch (error) {
+            console.log('error', error);
+        }
+    };
+
+        
+
 
     // Show new list input
     const handleShowAddTaskInput = () => {
@@ -97,6 +126,7 @@ function List() {
      // Open taskManger component
      const handleShowTaskDetails = (task) => {
         console.log('task', task);
+        setTaskId(task.task_id)
         setDetailsTask(task);
         setShowNewTask(false);
         setShowTaskManager(false);
@@ -125,14 +155,18 @@ function List() {
     <div className="page-wrapper">
         <div className="page-box">
             {list && (
-                <div className="d-flex">
+                <div className="d-flex listinfo">
                     <h1 className="mr-4"> {list.name}</h1>
                     <div className="mr-4 list-color" style={{ backgroundColor: list.color}}>{tasks.length}</div>
                     {/* <p>Created: {list.created}</p> */}
                     <TaskProgress tasks={tasks} />
-
                 </div>
             )}
+            <div className="d-flex">
+                <FontAwesomeIcon title="Add new task" onClick={handleShowAddTaskInput} className="addtask-button2" icon={faPlus} size="xs" />
+                <FontAwesomeIcon title="View notes" className="mx-2 addtask-button2" icon={faNoteSticky} size="xs" />
+                <FontAwesomeIcon title="Archive list" onClick={() => handleArchiveList(list_id)} className="addtask-button2" icon={faSquareCheck} size="xs" />
+            </div>
 
             <div className="mt-5">
                 <h5 style={{ fontSize: "1em" }}><b>Today</b></h5>
@@ -145,7 +179,7 @@ function List() {
                         .map(task => (
                             <div 
                                 key={task.task_id} 
-                                className={`d-flex justify-content-between task-box ${task.is_completed ? "task-box-done" : ""}`} 
+                                className={`d-flex justify-content-between task-box ${taskId === task.task_id && task.is_completed ? "task-box-active-done" : task.is_completed ? "task-box-done" : taskId === task.task_id ? "task-box-active" : ""}`} 
                                 style={{ borderLeft: `8px solid ${listColor}` }} 
                                 onClick={() => handleShowTaskDetails(task)}
                             >
@@ -159,13 +193,14 @@ function List() {
                                     />
                                     <h6>{task.title}</h6>
                                 </div>
-                                <div style={{ float: "right"}}>
-                                    <FontAwesomeIcon className="mr-1 mb-1" icon={faArrowRight} size="xs"/>
-                                    <FontAwesomeIcon className="mr-1 ml-2 mb-1" icon={faPenToSquare} size="xs" 
-                                    onClick={(e) => { 
-                                        e.stopPropagation();
-                                        handleShowTaskManager(task.task_id, task.due_date); 
-                                    }} 
+                                <div className="d-flex" >
+                                    <h6 className="subtaskamount">{task.subtasks.length}</h6>
+                                    {/* <FontAwesomeIcon className="arrowright-task-box mr-1" icon={faArrowRight} size="xs"/> */}
+                                    <FontAwesomeIcon className="mb-1 edittask-icon" icon={faPenToSquare} size="xs" 
+                                        onClick={(e) => { 
+                                            e.stopPropagation();
+                                            handleShowTaskManager(task.task_id, task.due_date); 
+                                        }} 
                                     />
                                 </div>
                             </div>
@@ -188,7 +223,7 @@ function List() {
                         })
                         .map(task => (
                             <div key={task.task_id} 
-                                className={`d-flex justify-content-between task-box ${task.is_completed ? "task-box-done" : ""}`} 
+                                className={`d-flex justify-content-between task-box ${taskId === task.task_id && task.is_completed ? "task-box-active-done" : task.is_completed ? "task-box-done" : taskId === task.task_id ? "task-box-active" : ""}`} 
                                 style={{ borderLeft: `8px solid ${listColor}` }}  
                                 onClick={() => handleShowTaskDetails(task)}
                             >
@@ -202,13 +237,14 @@ function List() {
                                     />
                                     <h6>{task.title}</h6>
                                 </div>
-                                <div style={{ float: "right"}}>
-                                    <FontAwesomeIcon className="mr-1 mb-1" icon={faArrowRight} size="xs"/>
-                                    <FontAwesomeIcon className="mr-1 ml-2 mb-1" icon={faPenToSquare} size="xs" 
-                                    onClick={(e) => { 
-                                        e.stopPropagation(); 
-                                        handleShowTaskManager(task.task_id, task.due_date); 
-                                    }} 
+                                <div className="d-flex">
+                                    <h6 className="subtaskamount">{task.subtasks.length}</h6>
+                                    {/* <FontAwesomeIcon className="mr-1 mb-1" icon={faArrowRight} size="xs"/> */}
+                                    <FontAwesomeIcon className="mb-1 edittask-icon" icon={faPenToSquare} size="xs" 
+                                        onClick={(e) => { 
+                                            e.stopPropagation(); 
+                                            handleShowTaskManager(task.task_id, task.due_date); 
+                                        }} 
                                     />
                                 </div>
                             </div>

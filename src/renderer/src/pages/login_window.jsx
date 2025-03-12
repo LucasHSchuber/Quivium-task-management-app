@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import fp from "../assets/images/diaphragm_black.png";
+import q from "../assets/images/q.png"
 import {  } from "@fortawesome/free-solid-svg-icons";
 
 function Login_window() {
@@ -90,7 +91,6 @@ function Login_window() {
         password: password 
       }
       try {
-          // Then check user to local database
           const data = { 
               email: username, 
               password: password 
@@ -125,46 +125,13 @@ function Login_window() {
     }
   };
 
-  // const proceedLogin = async (username, password) => {
-  //   try {
-  //     // Then check user to local database
-  //     const data = { 
-  //         email: username, 
-  //         password: password 
-  //     };
-  //     const responseData = await window.api.loginUser(data);
-  //     console.log(responseData);
-  //     if (responseData.status === 200) {
-  //         console.log("Log in successful");
-  //         localStorage.setItem("user_id", responseData.user.user_id);
-  //         localStorage.setItem("username", username);
-  //         localStorage.setItem("password", password);
-  //         localStorage.setItem("token", responseData.user.token);
-  //         // close login window and open mainWindow
-  //         setIsLoadingConfirm(true);
-  //         const timeout = setTimeout(() => {
-  //           window.api.createMainWindow();
-  //         }, 2400);
-  //     } else if (responseData.status === 202) { // User not found in local database
-  //         console.log("Activate your account by clicking the 'Activate account' button below.");
-  //         setErrorLogginginMessage("Activate your account by clicking the 'Activate account' button below.");
-  //     } else {
-  //         console.log("Invalid password");
-  //         setErrorLogginginMessage("Invalid password.");
-  //     }
-  //   } catch (error) {
-  //       console.log("error:", error);
-  //   }
-  // }
-
-
 
   if (isLoading) {
     // Render loading indicator while content is loading
     return (
-      <div>
+      <div className="loading-login">
         <div className="spinning-logo-login">
-          {/* <img src={fp} alt="fotografportalen" /> */}
+          <img src={q} alt="fotografportalen" />
           <p>
             <em>MyApp</em>
           </p>
@@ -175,8 +142,8 @@ function Login_window() {
   if (isLoadingConfirm) {
     // Render loading indicator while content is loading
     return (
-      <div>
-        <div className="spinning-logo-login" style={{ marginTop: "6em" }}>
+      <div className="signing-in">
+        <div className="spinning-logo-login" style={{ paddingTop: "6em" }}>
           <p>
             <em>Signing in...</em>
           </p>
