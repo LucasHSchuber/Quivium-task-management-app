@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 
 function AddNewTask({ list_id, onSuccess }) {
-  const today = new Date().toISOString().split("T")[0];
-  const [dueDate, setDueDate] = useState(today);
+  // define states
+  const [dueDate, setDueDate] = useState("");
   const [taskTitle, setTaskTitle] = useState("");
   const [taskDescription, setTaskDescription] = useState("");
   const [selectedList, setSelectedList] = useState("");
@@ -11,6 +11,7 @@ function AddNewTask({ list_id, onSuccess }) {
 
   console.log('list_id', list_id);
 
+
   useEffect(() => {
     if (list_id && lists.length > 0) {
       setSelectedList(list_id);
@@ -18,25 +19,26 @@ function AddNewTask({ list_id, onSuccess }) {
   }, [list_id, lists]);
 
 
-const fetchAllLists = async () => {
-    const user_id = localStorage.getItem("user_id");
-    try {
-        const getListsResponse = await window.api.getAllLists(user_id); 
-        console.log('getListsResponse', getListsResponse);
-        if (getListsResponse.status === 200){
-            setLists(getListsResponse.lists);
-        }
-    } catch (error) {
-        console.log('error', error);
-    }
-}
-useEffect(() => {
-    fetchAllLists()
-}, [list_id]);
+  // Method to fetch all lists
+  const fetchAllLists = async () => {
+      const user_id = localStorage.getItem("user_id");
+      try {
+          const getListsResponse = await window.api.getAllLists(user_id); 
+          console.log('getListsResponse', getListsResponse);
+          if (getListsResponse.status === 200){
+              setLists(getListsResponse.lists);
+          }
+      } catch (error) {
+          console.log('error', error);
+      }
+  }
+  useEffect(() => {
+      fetchAllLists()
+  }, [list_id]);
 
 
 
-
+  // handle submit 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const user_id = localStorage.getItem("user_id")
@@ -67,6 +69,10 @@ useEffect(() => {
   };
 
 
+  const setDueDateToToday = () => {
+    const today = new Date().toISOString().split("T")[0];
+    setDueDate(today);
+  }
 
 
 
@@ -98,12 +104,16 @@ useEffect(() => {
 
         <div className="form-group">
           <label>Due Date:</label>
-          <input
-            className="form-select"
-            type="date"
-            value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
-          />
+          <div className="d-flex">
+            <input
+              className="form-select"
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+            />
+            <button type="button" className="ml-1 setduedatetoday-button" onClick={(() => setDueDateToToday())}>Today</button>
+            <button type="button" className="setduedatetoday-button" onClick={(() => setDueDate(""))}>None</button>
+          </div>
         </div>
 
         <div className="form-group">

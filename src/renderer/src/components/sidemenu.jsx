@@ -10,10 +10,12 @@ import ListMenu from "./listMenu";
 
 import fp from "../assets/images/diaphragm.png";
 import { width } from "@fortawesome/free-regular-svg-icons/faAddressBook";
+import EditListModal from "../components/editListModal";
 
 function Sidemenu() {
     //define states
     const { taskUpdateTrigger } = useTaskContext();
+    const { triggerTaskUpdate } = useTaskContext();
 
     const [lists, setLists] = useState([]);
     const [posts, setPosts] = useState([]);
@@ -30,9 +32,20 @@ function Sidemenu() {
     const [tasksDueTodayCount, setTasksDueTodayCount] = useState(0); 
     const [tasksNotDueToday, setTasksNotDueToday] = useState(0);
 
+    const [showEditList, setShowEditList] = useState(false);
+
     const navigate = useNavigate(); 
 
     const onSuccessListmenu = () => {fetchAllLists(); navigate("/archive"); fetchArchivedLists();}
+    const openEditListModal = () => {setShowEditList(true)}
+    const onCloseEditList = () => {setShowEditList(false)}
+    const onSuccessEditList = () => {
+        console.log('Onsuccess edit list');
+        setShowEditList(false);
+        triggerTaskUpdate();
+    }
+    
+    
 
     // TaskTrigger
     useEffect(() => {
@@ -262,7 +275,7 @@ function Sidemenu() {
                                         </div>
                                     </NavLink>
                                     {showListMenu && selectedListId === list.list_id && (
-                                            <ListMenu listId={list.list_id} setShowListMenu={setShowListMenu} onSuccess={onSuccessListmenu} />
+                                            <ListMenu listId={list.list_id} setShowListMenu={setShowListMenu} onSuccess={onSuccessListmenu} openEditListModal={openEditListModal} />
                                     )}
                                 </div>
                             ))
@@ -304,6 +317,8 @@ function Sidemenu() {
                 
 
             </div>
+
+            {showEditList && <EditListModal showEditList={showEditList} selectedListId={selectedListId} onCloseEditList={onCloseEditList} onSuccess={onSuccessEditList} />}
 
         </div>
     );

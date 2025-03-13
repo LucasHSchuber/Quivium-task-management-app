@@ -118,6 +118,13 @@ function TaskManager({ show, list_id, taskId, due_date, onSuccess, onSuccessDele
         }
     }
 
+    // Set dueDate to today
+    const setDueDateToToday = () => {
+        const today = new Date().toISOString().split("T")[0];
+        setNewDueDate(today);
+    }
+    
+
 
 
   return (
@@ -159,12 +166,16 @@ function TaskManager({ show, list_id, taskId, due_date, onSuccess, onSuccessDele
                 <div>
                     <div className="form-group">
                         <label>Due Date:</label>
-                        <input
-                            className="form-select"
-                            type="date"
-                            value={newDueDate}
-                            onChange={(e) => setNewDueDate(e.target.value)}
-                        />
+                        <div className="d-flex">
+                            <input
+                                className="form-select"
+                                type="date"
+                                value={newDueDate}
+                                onChange={(e) => setNewDueDate(e.target.value)}
+                            />
+                            <button type="button" className="ml-1 setduedatetoday-button" onClick={(() => setDueDateToToday())}>Today</button>
+                            <button type="button" className="setduedatetoday-button" onClick={(() => setNewDueDate(""))}>None</button>
+                        </div>
                     </div>
                     <div className="form-group">
                         <label>Choose List:</label>

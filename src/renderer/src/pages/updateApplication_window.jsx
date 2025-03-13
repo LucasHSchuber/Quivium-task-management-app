@@ -75,8 +75,8 @@ function UpdateApplication_window() {
 
           <img src={q} alt="fotografportalen" />
 
-          <p className="mt-3"><em>{!errorMessage ? message : ""}</em></p>
-          <p style={{ fontSize: "0.5em" }}>{errorMessage ? errorMessage : ""}</p>
+          <p className="mt-3 px-1"><em>{!errorMessage ? message : ""}</em></p>
+          <p className="px-2" style={{ fontSize: "0.6em" }}>{errorMessage ? errorMessage : ""}</p>
 
           {updateAvailable && (
             <div className="d-flex justify-content-center mt-4">

@@ -65,7 +65,9 @@
 }
 
 
+
 /* TODAY PAGE */
+
 .addlist-button{
   color: rgb(65, 65, 65);
   font-size: 0.7em;
@@ -119,6 +121,26 @@
 
 
 
+/* LISTS */
+.showduetasks-button{
+  border: 1px solid rgb(184, 184, 184);
+  border-radius: 3px;
+  background-color: inherit;
+  padding: 0.1em 0.5em;
+  font-size: 0.7em;
+  height: 2em;
+  transition: 0.2s;
+}
+.showduetasks-button:hover{
+  background-color: rgb(238, 238, 238);
+}
+.showduetasks-button:focus{
+  outline: none;
+  border: 1px solid rgb(93, 93, 93) !important;
+}
+
+
+
 
 /* ADDNEWTASK COMPONENT */
 .savetask-button{
@@ -140,8 +162,8 @@
   width: 12em;
   border: none;
   font-size: 0.8em;
-  background-color: rgb(107, 107, 107);
-  color: white;
+  background-color: #cccccc;
+  color: rgb(67, 67, 67);
   padding: 0.4em 2em;
   font-weight: 900;
   border-radius: 3px;
@@ -151,6 +173,22 @@
 .canceltask-button:hover{
   background-color: rgb(169, 169, 169);
 }
+.setduedatetoday-button{
+  border: 1px solid rgb(240, 240, 240);
+  font-size: 0.7em;
+  cursor: pointer;
+  transition: 0.2s;
+  color: rgb(44, 44, 255);
+}
+.setduedatetoday-button:hover{
+  cursor: pointer;
+  background-color: #e0e0e0;
+  border: 1px solid rgb(198, 198, 198);
+}
+.setduedatetoday-button:focus{
+  outline: none;
+}
+
 
 
 /* TASK MANAGER */
@@ -230,3 +268,38 @@
 
 
 
+
+/* MODALS BUTTONS */
+.savemodal-button{
+  font-size: 0.8em;
+  font-weight: 900;
+  padding: 0.3em 0.6em 0.3em 0.6em;
+  height: 2.4em;
+  width: 10em;
+  border: none;
+  background-color: #67F3B2;
+  border-radius: 3px;
+  transition: 0.2s;
+  cursor: pointer;
+}
+.savemodal-button:hover{
+  /* border: 1px solid rgb(124, 124, 124); */
+  background-color: rgb(0, 253, 164);
+}
+.closemodal-button{
+  font-size: 0.8em;
+  font-weight: 900;
+  padding: 0.3em 0.6em 0.3em 0.6em;
+  height: 2.4em;
+  width: 7em;
+  border: none;
+  background-color: #cccccc;
+  color: rgb(59, 59, 59);
+  border-radius: 3px;
+  transition: 0.2s;
+  cursor: pointer;
+}
+.closemodal-button:hover{
+  /* border: 1px solid rgb(124, 124, 124); */
+  background-color: rgb(197, 197, 197);
+}

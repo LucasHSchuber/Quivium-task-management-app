@@ -63,6 +63,8 @@ function createUpdateWindow(callback) {
     resizable: false,
     autoHideMenuBar: true,
     show: true,
+    frame: false,
+    roundedCorners: true,
     // backgroundColor: '#232323',
     webPreferences: {
       preload: path.join(__dirname, "../preload/index.js"),
@@ -1156,6 +1158,59 @@ ipcMain.handle("getListById", async (event, list_id, user_id) => {
 });
 
 
+
+// Update list
+ipcMain.handle("updateList", async (event, args) => {
+  const { user_id, list_id, name, color } = args;
+  log.info("name", name)
+
+  if (!user_id || !list_id) {
+    return { status: 400, message: "Missing required data for updateList" };
+  }
+  if (!name || typeof name !== "string" || !name.trim()) {
+    return { status: 400, message: "Name cannot be empty" };
+  }
+
+  let query = "UPDATE lists SET ";
+  let params = [];
+  let updates = [];
+
+  if (name) {
+    updates.push("name = ?");
+    params.push(name);
+  }
+  if (color) {
+    updates.push("color = ?");
+    params.push(color);
+  }
+  if (updates.length === 0) {
+    return { status: 400, message: "No valid fields provided for update" };
+  }
+  query += updates.join(", ") + " WHERE list_id = ? AND user_id = ?";
+  params.push(list_id, user_id);
+  try {
+    const result = await new Promise((resolve, reject) => {
+      db.run(query, params, function (error) {
+        if (error) {
+          console.error("Error updating list:", error);
+          reject(error);
+        } else {
+          resolve({ changes: this.changes });
+        }
+      });
+    });
+
+    if (result.changes === 0) {
+      return { status: 404, message: "List not found or no changes made" };
+    }
+    return { status: 200, list_id, message: "List updated successfully" };
+  } catch (error) {
+    console.error("Error in updateList:", error);
+    return { status: 500, message: "Failed to update list" };
+  }
+});
+
+
 // delete list
 ipcMain.handle('deleteList', async (event, listId, user_id) => {
   log.info(listId);
@@ -1391,7 +1446,7 @@ ipcMain.handle("getAllTasks", async (event, user_id, list_id) => {
     FROM tasks t
     LEFT JOIN subtasks st ON t.task_id = st.task_id 
     WHERE t.user_id = ? AND t.list_id = ? AND t.is_deleted = 0
-    ORDER BY t.due_date
+    ORDER BY t.is_completed ASC, t.due_date ASC;
   `;
   try {
     const tasks = await new Promise((resolve, reject) => {

@@ -145,6 +145,21 @@
 
 
 
+/* EDIT LIST MODAL */
+.editlistname-input{
+  height: 1.7em;
+  border: 1px solid rgb(166, 166, 166);
+  background-color: rgb(250, 250, 250);
+  border-radius: 2px;
+  font-size: 0.85em;
+  padding: 0.5em 0.3em;
+}
+.editlistname-input:focus{
+  outline: none;
+  border: 1px solid rgb(133, 133, 133);
+  background-color: rgb(255, 255, 255);
+}
+
 
 
 /* SWEET ALERT STYLING */

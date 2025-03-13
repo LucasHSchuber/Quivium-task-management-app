@@ -4,9 +4,9 @@ export const getBaseUrl = () => {
 
   let url = "";
   if (platform === "darwin") {
-    url = "/index.php/rest/photographer_portal/login";
+    url = "";
   } else if (platform === "win32") {
-    url = "https://backend.expressbild.org/index.php/rest/photographer_portal/login";
+    url = "";
   }
 
   return { platform, url };

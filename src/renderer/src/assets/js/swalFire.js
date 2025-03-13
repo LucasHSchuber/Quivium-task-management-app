@@ -38,15 +38,3 @@ const showAlert = ({
 };
 
 export default showAlert;
-
-// import Swal from 'sweetalert2';
-// const showAlert = (header, message, type) => {
-//     Swal.fire({
-//       title: header,
-//       text: message,
-//       icon: type, // success, error, info, etc...
-//       confirmButtonText: "OK",
-//     });
-//   };
-
-//   export default showAlert;

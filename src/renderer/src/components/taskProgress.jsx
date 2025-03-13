@@ -24,7 +24,7 @@ function TaskProgress({ tasks, listId, listName, onSuccess }) {
         if (!localStorage.getItem(alertKey) || totalTasks > lastTaskCount) {
           swalFire({
             header: "Good Job!",
-            message: `You have completed all tasks for ${listName}. Would you like to move the list to archive?`,
+            message: `You have completed all tasks for '${listName}'. Would you like to move the list to archive?`,
             type: "success",
             showCancel: true,
             confirmText: "Yes, move to archive!",

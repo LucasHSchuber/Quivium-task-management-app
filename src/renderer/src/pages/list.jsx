@@ -2,34 +2,22 @@ import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import swalFire from "../assets/js/swalFire"
 import { useTaskContext } from "../context/taskContext";
+import { getTextColor } from '../assets/js/getTextColor'; 
 import { useNavigate } from "react-router-dom";  
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {  } from "@fortawesome/free-regular-svg-icons";
-import { faArrowRight, faPenToSquare, faPlus, faNoteSticky, faSquareCheck } from "@fortawesome/free-solid-svg-icons";
+import { faArrowRight, faPenToSquare, faPlus, faNoteSticky, faSquareCheck, faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
 
 import AddNewTask from "../components/addNewTask";
 import TaskManager from "../components/taskManager";
 import TaskProgress from "../components/taskProgress";
 import TaskDetails from "../components/taskDetails";
+import Notes from "../components/notes"
 
 
 
 function List() {
-
-    // useEffect(() => {
-    //         swalFire({
-    //             header: "Good Job!",
-    //             message: "You have completed all tasks for " + listName + " . Would you like to move the lists to achive?",
-    //             type: "success",
-    //             showCancel: true,
-    //             confirmText: "Yes, move archive!",
-    //             cancelText: "Cancel",
-    //             confirmCallback: () => console.log("User confirmed!"),
-    //             cancelCallback: () => console.log("User canceled!"),
-    //           });
-    // }, []);
-
     const { list_id } = useParams();
     const [taskId, setTaskId] = useState("")
     const [due_date, setDue_date] = useState("");
@@ -39,6 +27,8 @@ function List() {
     const [tasks, setTasks] = useState([]);
     const [showNewTask, setShowNewTask] = useState(false);
     const [detailsTask, setDetailsTask] = useState({});
+    const [showDueTasks, setShowDueTasks] = useState(false);
+    const [showNotes, setShowNotes] = useState(false);
 
     const [showTaskManager, setShowTaskManager] = useState(false);
     const [showTaskDetails, setShowTaskDetails] = useState(false);
@@ -56,7 +46,9 @@ function List() {
 
     // Clear taskmManager component on mount
     useEffect(() => {
-        setShowTaskManager(false);
+        setShowTaskManager(false)
+        setShowDueTasks(false)
+        setShowTaskDetails(false)
     }, [list_id]);
 
 
@@ -128,6 +120,7 @@ function List() {
     const handleShowAddTaskInput = () => {
         setShowTaskManager(false);
         setShowTaskDetails(false)
+        setShowNotes(false)
         setShowNewTask(!showNewTask);
     }
    
@@ -135,6 +128,7 @@ function List() {
     const handleShowTaskManager = (task_id, due_date) => {
         setShowNewTask(false);
         setShowTaskDetails(false);
+        setShowNotes(false)
         setDue_date(due_date)
         setTaskId(task_id)
         setShowTaskManager(true);
@@ -147,7 +141,15 @@ function List() {
         setDetailsTask(task);
         setShowNewTask(false);
         setShowTaskManager(false);
+        setShowNotes(false)
         setShowTaskDetails(true);        
+    }
+    // Show new list input
+    const handleShowNotes = () => {
+        setShowTaskManager(false);
+        setShowTaskDetails(false)
+        setShowNewTask(false);
+        setShowNotes(true)
     }
 
 
@@ -174,17 +176,17 @@ function List() {
             {list && (
                 <div className="d-flex listinfo">
                     <h1 className="mr-4"> {list.name}</h1>
-                    <div className="mr-4 list-color" style={{ backgroundColor: list.color}}>{tasks.length}</div>
+                    <div className="mr-4 list-color" style={{ backgroundColor: list.color, color: getTextColor(list.color)}}>{tasks.length}</div>
                     {/* <p>Created: {list.created}</p> */}
                     <TaskProgress tasks={tasks} listId={list_id} listName={listName} onSuccess={onSuccessArchivedList} />
                 </div>
             )}
             <div className="d-flex">
                 <FontAwesomeIcon title="Add new task" onClick={handleShowAddTaskInput} className="addtask-button2" icon={faPlus} size="xs" />
-                <FontAwesomeIcon title="View notes" className="mx-2 addtask-button2" icon={faNoteSticky} size="xs" />
+                <FontAwesomeIcon title="View notes" onClick={() => handleShowNotes(list_id)} className="mx-2 addtask-button2" icon={faNoteSticky} size="xs" />
                 <FontAwesomeIcon title="Archive list" onClick={() => handleArchiveList(list_id)} className="addtask-button2" icon={faSquareCheck} size="xs" />
             </div>
-
+            {/* TODAYS TASKS */}
             <div className="mt-5">
                 <h5 style={{ fontSize: "1em" }}><b>Today</b></h5>
                 {tasks.length > 0 ? (
@@ -206,7 +208,8 @@ function List() {
                                         id={`task-checkbox-${task.task_id}`} 
                                         className="checkbox" 
                                         defaultChecked={task.is_completed}
-                                        onChange={() => handleUpdateIsCompleted(task.is_completed, task.task_id)}
+                                        onClick={(e) => e.stopPropagation()} 
+                                        onChange={(e) => handleUpdateIsCompleted(task.is_completed, task.task_id)}
                                     />
                                     <h6>{task.title}</h6>
                                 </div>
@@ -223,20 +226,20 @@ function List() {
                             </div>
                         ))
                 ) : (
-                    <h6 style={{ fontSize: "0.9em" }}><em>No tasks found</em></h6>
+                    <h6 style={{ fontSize: "0.8em" }}><em>No tasks found</em></h6>
                 )}
                 <div>
                     <button onClick={handleShowAddTaskInput} className="addlist-button">{showNewTask ? "- Add New Task" : "+ Add New Task"}</button>
                 </div>
             </div>
-
+            {/* UPCOMIING TASKS */}
             <div className="mt-3">
-                <h5 style={{ fontSize: "1em" }}><b>This week</b></h5>
+                <h5 style={{ fontSize: "1em" }}><b>Upcoming</b></h5>
                 {tasks.length > 0 ? (
                     tasks
                         .filter(task => {
                             const today = new Date().toISOString().split('T')[0];
-                            return task.due_date !== today;
+                            return task.due_date > today || task.due_date === "";
                         })
                         .map(task => (
                             <div key={task.task_id} 
@@ -250,7 +253,8 @@ function List() {
                                         id={`task-checkbox-${task.task_id}`} 
                                         className="checkbox" 
                                         defaultChecked={task.is_completed}
-                                        onChange={() => handleUpdateIsCompleted(task.is_completed, task.task_id)}
+                                        onClick={(e) => e.stopPropagation()} 
+                                        onChange={(e) => handleUpdateIsCompleted(task.is_completed, task.task_id)}
                                     />
                                     <h6>{task.title}</h6>
                                 </div>
@@ -267,17 +271,67 @@ function List() {
                             </div>
                         ))
                 ) : (
-                    <h6 style={{ fontSize: "0.9em" }}><em>No tasks found</em></h6>
+                    <h6 style={{ fontSize: "0.8em" }}><em>No tasks found</em></h6>
                 )}
                 <div>
                     <button onClick={handleShowAddTaskInput} className="addlist-button">{showNewTask ? "- Add New Task" : "+ Add New Task"}</button>
                 </div>
             </div>
+            {/* DUE TASKS */}
+            <div className="mt-5">
+                <div className="d-flex">
+                    <h5 style={{ fontSize: "1em" }}><b>Due Tasks</b></h5>
+                    <button className="showduetasks-button ml-2" onClick={() => setShowDueTasks(!showDueTasks)}>
+                        <FontAwesomeIcon icon={showDueTasks ? faChevronUp : faChevronDown} size="xs"/>
+                    </button>
+                </div>
+
+                {showDueTasks && (() => {
+                    const today = new Date().toISOString().split('T')[0];
+                    const dueTasks = tasks.filter(task => task.due_date !== "" && task.due_date < today);
+
+                    return dueTasks.length > 0 ? (
+                        dueTasks.map(task => (
+                            <div key={task.task_id} 
+                                className={`d-flex justify-content-between task-box ${taskId === task.task_id && task.is_completed ? "task-box-active-done" : task.is_completed ? "task-box-done" : taskId === task.task_id ? "task-box-active" : ""}`} 
+                                style={{ borderLeft: `8px solid ${listColor}` }}  
+                                onClick={() => handleShowTaskDetails(task)}
+                            >
+                                <div className="d-flex">
+                                    <input 
+                                        type="checkbox" 
+                                        id={`task-checkbox-${task.task_id}`} 
+                                        className="checkbox" 
+                                        defaultChecked={task.is_completed}
+                                        onClick={(e) => e.stopPropagation()} 
+                                        onChange={(e) => handleUpdateIsCompleted(task.is_completed, task.task_id)}
+                                    />
+                                    <h6>{task.title}</h6>
+                                </div>
+                                <div className="d-flex">
+                                    <h6 className="subtaskamount">{task.subtasks.length}</h6>
+                                    <FontAwesomeIcon className="mb-1 edittask-icon" icon={faPenToSquare} size="xs" 
+                                        onClick={(e) => { 
+                                            e.stopPropagation(); 
+                                            handleShowTaskManager(task.task_id, task.due_date); 
+                                        }} 
+                                    />
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <h6 style={{ fontSize: "0.8em" }}><em>No tasks past due date</em></h6>
+                    );
+                })()}
+            </div>
+
         </div>
     
         {showNewTask && < AddNewTask list_id={list_id} onSuccess={onSuccessNewTask}/>}
         {showTaskManager && < TaskManager show={showTaskManager} list_id={list_id} taskId={taskId} due_date={due_date} onSuccess={onSuccessNewTask} onSuccessDelete={onSuccessDelete}/>}
-        {showTaskDetails && < TaskDetails show={showTaskDetails} detailsTask={detailsTask} onSuccess={onSuccessNewTask}/>}
+        {showTaskDetails && < TaskDetails show={showTaskDetails} detailsTask={detailsTask} listColor={listColor} listName={listName} onSuccess={onSuccessNewTask}/>}
+        {showNotes && < Notes show={showNotes} list_id={list_id} tasks={tasks} />}
+
     </div>
   );
 }

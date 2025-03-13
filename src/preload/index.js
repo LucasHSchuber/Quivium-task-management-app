@@ -47,6 +47,7 @@ const api = {
   createNewList: args => ipcRenderer.invoke("createNewList", args), // create new list
   getAllLists: user_id => ipcRenderer.invoke("getAllLists", user_id), // fetch all list from sqlite
   getListById: (list_id, user_id) => ipcRenderer.invoke("getListById", list_id, user_id), // fetch list from sqlite
+  updateList: args => ipcRenderer.invoke("updateList", args), // update list
   deleteList: (listId, user_id) => ipcRenderer.invoke("deleteList", listId, user_id), // delete list 
   setListAsArchived: args => ipcRenderer.invoke("setListAsArchived", args), // set list as archived
   getArchivedLists: user_id => ipcRenderer.invoke("getArchivedLists", user_id), // fetch all archived list from sqlite

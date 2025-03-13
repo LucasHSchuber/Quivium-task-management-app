@@ -5,7 +5,7 @@ import {  } from "@fortawesome/free-regular-svg-icons";
 import { faTrash, faEdit, faTimes, faPlus } from "@fortawesome/free-solid-svg-icons";
 
 
-function TaskDetails({ show, detailsTask, onSuccess }) {
+function TaskDetails({ show, detailsTask, listColor, listName, onSuccess }) {
     // define states
     const [taskWithSubtasks, setTaskWithSubtasks] = useState({});
     const [newSubtask, setNewSubtask] = useState("");
@@ -60,16 +60,20 @@ function TaskDetails({ show, detailsTask, onSuccess }) {
 
 
 
-
-
     return (
         <div className="taskdetails">
             <div className="taskdetails-box">
                 <h5 className="mb-5" style={{ fontWeight: "900", fontSize: "1.1em" }}>Task Details</h5>
                 <div className="pb-4">
-                    <h6><b>Title:</b> {taskWithSubtasks.task_title}</h6>    
+                    <div className="d-flex justify-content-between">
+                        <div className="d-flex link-box-left">
+                            <div className="mr-2 liscolor" style={{ backgroundColor: listColor }}></div>
+                            <p title={listName}><b>{listName.length > 20 ? listName.substring(0,20) + ".." : listName}</b></p>
+                        </div>   
+                    </div>
+                    <h6><b>Task title:</b> {taskWithSubtasks.task_title}</h6>    
                     <h6 className="my-3"><b>Description:</b> {taskWithSubtasks.task_description}</h6>
-                    <h6><b>Due Date:</b> {taskWithSubtasks.task_due_date || "No due date"}</h6>
+                    <h6><b>Due Date:</b> {taskWithSubtasks.task_due_date || <em>No due date</em>}</h6>
                 </div>
                 {/* <hr style={{ marginBottom: "0" }}></hr> */}
             </div>   
