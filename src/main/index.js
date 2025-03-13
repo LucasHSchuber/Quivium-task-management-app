@@ -643,6 +643,21 @@ function createTables() {
         )
       `,
     },
+    // {
+    //   name: "sublists",
+    //   query: `
+    //     CREATE TABLE IF NOT EXISTS sublists (
+    //       sublist_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    //       name TEXT NOT NULL,
+    //       is_deleted INTEGER DEFAULT 0,
+    //       archived INTEGER DEFAULT 0,
+    //       archived_date TEXT,
+    //       created TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    //       list_id INTEGER NOT NULL,
+    //       FOREIGN KEY (list_id) REFERENCES lists(list_id)
+    //     )
+    //   `,
+    // },
     {
       name: "tasks",
       query: `

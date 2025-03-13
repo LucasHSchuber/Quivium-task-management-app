@@ -67,7 +67,7 @@ function TaskDetails({ show, detailsTask, listColor, listName, onSuccess }) {
                 <div className="pb-4">
                     <div className="d-flex justify-content-between">
                         <div className="d-flex link-box-left">
-                            <div className="mr-2 liscolor" style={{ backgroundColor: listColor }}></div>
+                            <div className="mr-2 listcolor" style={{ backgroundColor: listColor }}></div>
                             <p title={listName}><b>{listName.length > 20 ? listName.substring(0,20) + ".." : listName}</b></p>
                         </div>   
                     </div>

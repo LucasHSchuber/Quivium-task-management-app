@@ -66,6 +66,8 @@
 
 
 
+
+
 /* TODAY PAGE */
 
 .addlist-button{
@@ -105,7 +107,6 @@
   color: rgb(65, 65, 65);
   height: 1.8em;
   font-size: 0.7em;
-  border: 1px solid rgb(181, 181, 181);
   border: 1px solid gray;
   cursor: pointer;
   transition: 0.2s;
@@ -116,6 +117,18 @@
 .createlist-button:focus{
   outline: none;
   border: 1px solid rgb(53, 53, 53);
+}
+.createsublist-button{
+  color: rgb(65, 65, 65);
+  height: 2em;
+  font-size: 0.7em;
+  border: none;
+  border-bottom: 1px solid black;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.createsublist-button:hover{
+  background-color: #67F3B2;
 }
 
 
@@ -128,7 +141,7 @@
   background-color: inherit;
   padding: 0.1em 0.5em;
   font-size: 0.7em;
-  height: 2em;
+  height: 1.8em;
   transition: 0.2s;
 }
 .showduetasks-button:hover{
@@ -208,6 +221,22 @@
   outline: none;
 }
 
+.edittask-button{
+  font-size: 0.9em;
+  border: none;
+  background-color: inherit;
+  transition: 0.2s;
+  color: #4b4b4b;
+  cursor: pointer;
+  margin-top: -0.4em;
+}
+.edittask-button:hover{
+  color: rgb(255, 157, 0);
+}
+.edittask-button:focus{
+  outline: none;
+}
+
 
 
 
@@ -267,6 +296,26 @@
 }
 
 
+
+
+/* NOTES */
+.addnote-button{
+  color: rgb(65, 65, 65);
+  background-color: inherit;
+  /* font-size: 1em; */
+  font-weight: 900;
+  margin-top: -0.4em;
+  height: 1em;
+  padding: 0.3em;
+  border: 1px solid rgb(161, 161, 161);
+  border-radius: 3px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.addnote-button:hover{
+  background-color: rgb(233, 233, 233);
+  border: 1px solid rgb(119, 119, 119);
+}
 
 
 /* MODALS BUTTONS */

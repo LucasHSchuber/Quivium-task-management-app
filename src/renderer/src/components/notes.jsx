@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {  } from "@fortawesome/free-regular-svg-icons";
-import { faMinus } from "@fortawesome/free-solid-svg-icons";
+import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { width } from "@fortawesome/free-regular-svg-icons/faAddressBook";
 
 
 function Notes({ show, list_id, tasks }) {
@@ -66,9 +67,12 @@ function Notes({ show, list_id, tasks }) {
                     {tasks && tasks.length > 0 ? (
                         tasks.map((task, index) => (
                             <div className="mb-4">
-                                <div className="d-flex">
-                                    <h6><b>{task.title}</b></h6>
-                                    <button className="ml-2 addlist-button">+</button>
+                                <div className="d-flex justify-content-between">
+                                    <div>
+                                        <h6><b>{task.title}</b></h6>
+                                    </div>
+                                    {/* <button className="ml-2 addnote-button">+</button> */}
+                                    <FontAwesomeIcon title="Add new task" className="addnote-button" icon={faPlus} size="xs" />
                                 </div>
                                 <h6>-</h6>
                                 {/* <FontAwesomeIcon icon={faMinus} size="xs" /> */}

@@ -321,6 +321,15 @@
   color: rgb(137, 137, 137);
 }
 
+.duetasksamount{
+  text-align: center;
+  height: 1.5em;
+  background-color: #eeeeee; 
+  padding: 0.2em 0.4em 0 0.4em;
+  text-decoration: none !important;
+  border-radius: 2px;
+  font-size: 0.8em !important;
+}
 
 
 

@@ -143,7 +143,7 @@ function TaskManager({ show, list_id, taskId, due_date, onSuccess, onSuccessDele
                     ) : (
                         <h6><b>{task.title}</b></h6>
                     )}
-                <button title="Edit task" className="ml-3 deletetask-button" onClick={() => setIsEditing(!isEditing)}><FontAwesomeIcon title="Edit task" icon={faEdit} size="xs"/></button>
+                <button title="Edit task" className="ml-3 edittask-button" onClick={() => setIsEditing(!isEditing)}><FontAwesomeIcon title="Edit task" icon={faEdit} size="xs"/></button>
                 <button title="Delete task" className="deletetask-button" onClick={deleteTask}><FontAwesomeIcon title="Delete task" icon={faTrash} size="xs"/></button>
             </div>
             {isEditing ? (

@@ -123,7 +123,6 @@ function AddNewTask({ list_id, onSuccess }) {
             value={selectedList}
             onChange={(e) => setSelectedList(e.target.value)}
           >
-            {/* <option value="">Select a list</option> */}
             {lists.map((list) => (
               <option key={list.list_id} value={list.list_id}>
                 {list.name}

@@ -34,6 +34,8 @@ function Sidemenu() {
 
     const [showEditList, setShowEditList] = useState(false);
 
+    const [showNewSubList, setShowNewSubList] = useState(false);
+
     const navigate = useNavigate(); 
 
     const onSuccessListmenu = () => {fetchAllLists(); navigate("/archive"); fetchArchivedLists();}
@@ -196,6 +198,7 @@ function Sidemenu() {
 
 
 
+
     return (
         <div className="sidemenu">
             {/* Alert user if no internet connection */}
@@ -208,12 +211,12 @@ function Sidemenu() {
             
             {/* Content */}
             <div className="sidemenu-box">
-                <h6>Menu</h6>
+                <h6 className="mt-4">Menu</h6>
                 <div className="mt-5 mb-4 sidemenu-menu">
                     {/* TASKS */}
                     <h6>TASKS</h6>
                           
-                            <div title="Today" className={`link-box ${activeTab === "today" ? "link-box-active" : "" }`}>
+                            <div title="Today" className={`mb-1 link-box ${activeTab === "today" ? "link-box-active" : "" }`}>
                                 <NavLink onClick={() => setActiveTab("today")} to="/" exact="true" className="navlink">
                                     <div className="d-flex justify-content-between">
                                         <div className="d-flex">
@@ -224,7 +227,7 @@ function Sidemenu() {
                                     </div>
                                 </NavLink>
                             </div>
-                            <div title="Upcoming" className={`link-box ${activeTab === "upcoming" ? "link-box-active" : "" }`}>
+                            <div title="Upcoming" className={`mb-1 link-box ${activeTab === "upcoming" ? "link-box-active" : "" }`}>
                                 <NavLink onClick={() => setActiveTab("upcoming")} to="/upcoming" exact="true" className="navlink">
                                     <div className="d-flex justify-content-between">
                                         <div className="d-flex">
@@ -252,31 +255,43 @@ function Sidemenu() {
                 <div className="sidemenu-menu">
                     <h6>LISTS</h6>
                         {lists.length > 0 ? (
-                            lists.map(list => (
-                                <div key={list.list_id} className={`link-box ${activeTab === list.list_id ? "link-box-active" : ""}`}>
-                                    <NavLink onClick={() => setActiveTab(list.list_id)} to={`/list/${list.list_id}`} exact="true" className="navlink">
-                                        <div className="d-flex justify-content-between">
-                                            <div className="d-flex link-box-left">
-                                                <div className="mr-2 liscolor" style={{ backgroundColor: list.color }}></div>
-                                                <p title={list.name}>{list.name.length > 20 ? list.name.substring(0,20) + ".." : list.name}</p>
-                                            </div>   
-                                            <div className="d-flex">
-                                                <p className="taskamount">{list.tasks.length}</p>
-                                                <FontAwesomeIcon 
-                                                    className="list-minimenu" 
-                                                    onClick={(event) => {
-                                                        event.stopPropagation(); 
-                                                        event.preventDefault(); 
-                                                        handleListClick(list.list_id);
-                                                    }}  
-                                                    icon={faEllipsisVertical} size="xs"
-                                                />
+                            lists.map((list, index) => (
+                                <div key={list.list_id}>
+                                    <div  className={`mb-1 link-box ${activeTab === list.list_id ? "link-box-active" : ""}`}>
+                                        <NavLink onClick={() => setActiveTab(list.list_id)} to={`/list/${list.list_id}`} className="navlink">
+                                            <div className="d-flex justify-content-between">
+                                                <div className="d-flex link-box-left">
+                                                    <div className="mr-2 listcolor" style={{ backgroundColor: list.color }}></div>
+                                                    <p title={list.name}>{list.name.length > 20 ? list.name.substring(0,20) + ".." : list.name}</p>
+                                                </div>   
+                                                <div className="d-flex">
+                                                    <p className="taskamount">{list.tasks.length}</p>
+                                                    <FontAwesomeIcon 
+                                                        className="list-minimenu" 
+                                                        onClick={(event) => {
+                                                            event.stopPropagation(); 
+                                                            event.preventDefault(); 
+                                                            handleListClick(list.list_id);
+                                                        }}  
+                                                        icon={faEllipsisVertical} size="xs"
+                                                    /> 
+                                                </div>
                                             </div>
+                                        </NavLink>
+                                        {showListMenu && selectedListId === list.list_id && (
+                                                <ListMenu listId={list.list_id} setShowListMenu={setShowListMenu} onSuccess={onSuccessListmenu} openEditListModal={openEditListModal} />
+                                        )}
+                                    </div>
+                                    {/* {activeTab === list.list_id && (
+                                        <div style={{ marginLeft: "1.5em" }} className="mt-2 d-flex">
+                                            <div className="mr-1 sublistcolor" style={{ backgroundColor: list.color }}></div>
+                                            <input onChange={(e) => handleListName(e.target.value)} className="mb-1 newsublist-input" placeholder="New sub list"></input>
+                                            <button onClick={createNewList} className="createsublist-button">
+                                                <FontAwesomeIcon title="Create new sub list" icon={faPlus} size="xs"/>
+                                            </button>
                                         </div>
-                                    </NavLink>
-                                    {showListMenu && selectedListId === list.list_id && (
-                                            <ListMenu listId={list.list_id} setShowListMenu={setShowListMenu} onSuccess={onSuccessListmenu} openEditListModal={openEditListModal} />
-                                    )}
+                                    )} */}
+
                                 </div>
                             ))
                         ) : (
@@ -295,7 +310,7 @@ function Sidemenu() {
                                         value={selectedColor}
                                         onChange={handleColorChange}
                                     />
-                                    <input onChange={(e) => handleListName(e.target.value)} className="mb-1 mx-1 newlist-input" placeholder="List name.."></input>
+                                    <input onChange={(e) => handleListName(e.target.value)} className="mb-1 mx-1 newlist-input" placeholder="List name"></input>
                                     <button onClick={createNewList} className="createlist-button"><FontAwesomeIcon title="Create new list" icon={faPlus} size="xs"/></button>
                                 </div>
                             )}

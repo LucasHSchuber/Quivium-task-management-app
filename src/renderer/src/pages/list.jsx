@@ -281,6 +281,7 @@ function List() {
             <div className="mt-5">
                 <div className="d-flex">
                     <h5 style={{ fontSize: "1em" }}><b>Due Tasks</b></h5>
+                    <h6 className="ml-2 duetasksamount">{tasks.filter(task => task.due_date !== "" && task.due_date < new Date().toISOString().split('T')[0]).length}</h6>
                     <button className="showduetasks-button ml-2" onClick={() => setShowDueTasks(!showDueTasks)}>
                         <FontAwesomeIcon icon={showDueTasks ? faChevronUp : faChevronDown} size="xs"/>
                     </button>
