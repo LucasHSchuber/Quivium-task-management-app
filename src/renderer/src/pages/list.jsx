@@ -1,5 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
+import swalFire from "../assets/js/swalFire"
 import { useTaskContext } from "../context/taskContext";
 import { useNavigate } from "react-router-dom";  
 
@@ -15,10 +16,25 @@ import TaskDetails from "../components/taskDetails";
 
 
 function List() {
+
+    // useEffect(() => {
+    //         swalFire({
+    //             header: "Good Job!",
+    //             message: "You have completed all tasks for " + listName + " . Would you like to move the lists to achive?",
+    //             type: "success",
+    //             showCancel: true,
+    //             confirmText: "Yes, move archive!",
+    //             cancelText: "Cancel",
+    //             confirmCallback: () => console.log("User confirmed!"),
+    //             cancelCallback: () => console.log("User canceled!"),
+    //           });
+    // }, []);
+
     const { list_id } = useParams();
     const [taskId, setTaskId] = useState("")
     const [due_date, setDue_date] = useState("");
     const [list, setList] = useState(null);
+    const [listName, setListName] = useState("");
     const [listColor, setListColor] = useState("");
     const [tasks, setTasks] = useState([]);
     const [showNewTask, setShowNewTask] = useState(false);
@@ -30,7 +46,7 @@ function List() {
     const navigate = useNavigate(); 
     const { triggerTaskUpdate } = useTaskContext();
 
-
+    const onSuccessArchivedList = () => {navigate("/archive")}
     const onSuccessNewTask = () => {
         fetchAllTasks()
         triggerTaskUpdate(); 
@@ -53,6 +69,7 @@ function List() {
             if (listResponse.statusCode === 200) {
             setList(listResponse.list);
             setListColor(listResponse.list.color)
+            setListName(listResponse.list.name)
             }
         } catch (error) {
             console.log("error", error);
@@ -60,7 +77,7 @@ function List() {
     };
     useEffect(() => {
         fetchList();
-    }, [list_id]);
+    }, [list_id, triggerTaskUpdate]);
 
 
 
@@ -159,7 +176,7 @@ function List() {
                     <h1 className="mr-4"> {list.name}</h1>
                     <div className="mr-4 list-color" style={{ backgroundColor: list.color}}>{tasks.length}</div>
                     {/* <p>Created: {list.created}</p> */}
-                    <TaskProgress tasks={tasks} />
+                    <TaskProgress tasks={tasks} listId={list_id} listName={listName} onSuccess={onSuccessArchivedList} />
                 </div>
             )}
             <div className="d-flex">

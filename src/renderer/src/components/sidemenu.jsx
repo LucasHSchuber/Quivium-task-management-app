@@ -276,7 +276,8 @@ function Sidemenu() {
                                 <div className="mt-1 d-flex">
                                     <input 
                                         type="color" 
-                                        id="color-picker"
+                                        // id="color-picker"
+                                        className="color-picker"
                                         style={{ width: "1.15em", height: "1.2em", borderRadius: "30px", border: "none",  outline: "none", backgroundColor: selectedColor }}
                                         value={selectedColor}
                                         onChange={handleColorChange}

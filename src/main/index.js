@@ -1213,10 +1213,11 @@ ipcMain.handle('setListAsArchived', async (event, args) => {
 });
 
 
+
 //get all archived lists by user_id
 ipcMain.handle("getArchivedLists", async (event, user_id) => {
   if (!user_id) {throw new Error("Missing user_id for getArchivedLists")}
-  const query = "SELECT * FROM lists WHERE user_id = ? AND is_deleted = 0 AND archived = 1";
+  const query = "SELECT * FROM lists WHERE user_id = ? AND is_deleted = 0 AND archived = 1 ORDER by archived_date";
   try {
     const lists = await new Promise((resolve, reject) => {
       const db = new sqlite3.Database(dbPath);
@@ -1236,6 +1237,83 @@ ipcMain.handle("getArchivedLists", async (event, user_id) => {
     return { statusCode: 500, errorMessage: error.message || "Internal Server Error" };
   }
 });
+
+
+// // Get all archived lists by user_id, including tasks and subtasks
+// ipcMain.handle("getArchivedLists", async (event, user_id) => {
+//   if (!user_id) {
+//     throw new Error("Missing user_id for getArchivedLists");
+//   }
+
+//   const query = `
+//     SELECT 
+//       l.list_id, l.name AS list_name, l.archived_date,
+//       t.task_id, t.name AS task_name, t.completed AS task_completed,
+//       s.subtask_id, s.name AS subtask_name, s.completed AS subtask_completed
+//     FROM lists l
+//     LEFT JOIN tasks t ON t.list_id = l.list_id
+//     LEFT JOIN subtasks s ON s.task_id = t.task_id
+//     WHERE l.user_id = ? AND l.is_deleted = 0 AND l.archived = 1
+//     ORDER BY l.archived_date, t.task_id, s.subtask_id;
+//   `;
+
+//   try {
+//     const listsWithTasks = await new Promise((resolve, reject) => {
+//       const db = new sqlite3.Database(dbPath);
+
+//       db.all(query, [user_id], (error, rows) => {
+//         if (error) {
+//           console.error("Error fetching archived lists:", error);
+//           reject({ statusCode: 400, errorMessage: error.message });
+//         } else {
+//           // Convert the flat structure into a nested JSON format
+//           const listsMap = new Map();
+
+//           rows.forEach(row => {
+//             if (!listsMap.has(row.list_id)) {
+//               listsMap.set(row.list_id, {
+//                 list_id: row.list_id,
+//                 list_name: row.list_name,
+//                 archived_date: row.archived_date,
+//                 tasks: []
+//               });
+//             }
+
+//             if (row.task_id && !listsMap.get(row.list_id).tasks.some(t => t.task_id === row.task_id)) {
+//               listsMap.get(row.list_id).tasks.push({
+//                 task_id: row.task_id,
+//                 task_name: row.task_name,
+//                 task_completed: row.task_completed,
+//                 subtasks: []
+//               });
+//             }
+
+//             if (row.subtask_id) {
+//               const task = listsMap.get(row.list_id).tasks.find(t => t.task_id === row.task_id);
+//               if (task) {
+//                 task.subtasks.push({
+//                   subtask_id: row.subtask_id,
+//                   subtask_name: row.subtask_name,
+//                   subtask_completed: row.subtask_completed
+//                 });
+//               }
+//             }
+//           });
+
+//           resolve([...listsMap.values()]);
+//         }
+//       });
+
+//       db.close();
+//     });
+
+//     return { status: 200, lists: listsWithTasks };
+//   } catch (error) {
+//     console.error("Error fetching user data:", error);
+//     return { statusCode: 500, errorMessage: error.message || "Internal Server Error" };
+//   }
+// });
+
 
 
 // Move lists back to lists from archived

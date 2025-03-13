@@ -230,39 +230,3 @@
 
 
 
-
-
-
-.download-file-button{
-  /* cursor: pointer; */
-  color: rgb(0, 0, 0);
-  background-color: inherit;
-  border: 1px solid rgb(237, 237, 237);
-  font-size: 0.9em;
-  border-radius: 2px;
-  padding: 0.1em 0.6em;
-  transition: 0.1s;
-}
-.download-file-button:hover{
-  background-color: rgb(247, 247, 247);
-  border: 1px solid rgb(159, 159, 159);
-}
-.download-file-button:focus{
-  outline: 1px solid black;
-}
-
-.index-swal-fire-button {
-  background-color: black !important; 
-  color: white !important;          
-  border: none !important;          
-  padding: 10px 20px !important;    
-  font-size: 1em !important;        
-  border-radius: 5px !important;    
-  cursor: pointer !important;      
-}
-.index-swal-fire-button:hover {
-  background-color: #333 !important; 
-}
-.index-swal-fire-button:focus {
-  outline: none;
-}

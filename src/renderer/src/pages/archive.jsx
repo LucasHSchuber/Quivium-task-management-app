@@ -61,9 +61,10 @@ function Archive() {
                         >
                             <div className="d-flex">
                                 <div className="mr-2" style={{ borderRadius: "30px", backgroundColor: list.color, width: "12px", height: "12px", marginTop: "0.1em" }}></div>
-                                <h6>{list.name}</h6>
+                                <h6 className="mr-4">{list.name}</h6>
                             </div>
-                            <div>
+                            <div className="d-flex">
+                                <h6 className="mr-3 archived-date"><em>Archived: {list.archived_date.substring(0,16)}</em></h6>
                                 <FontAwesomeIcon onClick={() => moveBackToLists(list.list_id)} title="Move back to lists" className="mb-1 movefromarchived-icon" icon={faRotateLeft} size="xs" />
                             </div>
                         </div>

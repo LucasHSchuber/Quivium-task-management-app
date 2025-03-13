@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
 
 function AddNewTask({ list_id, onSuccess }) {
+  const today = new Date().toISOString().split("T")[0];
+  const [dueDate, setDueDate] = useState(today);
   const [taskTitle, setTaskTitle] = useState("");
   const [taskDescription, setTaskDescription] = useState("");
-//   const [subtaskName, setSubtaskName] = useState("");
-  const [dueDate, setDueDate] = useState("");
   const [selectedList, setSelectedList] = useState("");
-  const [subtasks, setSubtasks] = useState([]);
 
   const [lists, setLists] = useState([]);
 
@@ -18,12 +17,6 @@ function AddNewTask({ list_id, onSuccess }) {
     }
   }, [list_id, lists]);
 
-//   const handleAddSubtask = () => {
-//     if (subtaskName.trim()) {
-//       setSubtasks([...subtasks, subtaskName]);
-//       setSubtaskName(""); // Reset the input field for the next subtask
-//     }
-//   };
 
 const fetchAllLists = async () => {
     const user_id = localStorage.getItem("user_id");
@@ -64,7 +57,6 @@ useEffect(() => {
             setTaskTitle("");
             setTaskDescription("");
             setDueDate("");
-            setSubtasks([]);
             setTimeout(() => {
               onSuccess()
             }, 250);
