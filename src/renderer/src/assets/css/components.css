@@ -162,6 +162,79 @@
 
 
 
+
+
+
+/* NOTES */
+.notes{
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 27%;
+  height: 99vh;
+  background-color: #efefef;
+  border-radius: 5px;
+  margin: 0.2em;
+  z-index: 30;
+  overflow-y: auto;
+}
+.notes-box{
+  padding: 5em 1.5em 0 1.5em;
+  background-color: #efefef;
+}
+.notes h5{
+  color: #3cd48d;
+  font-size: 1em;
+}
+.notes h6{
+  color: rgb(58, 58, 58);
+  font-size: 0.8em;
+}
+.notes p{
+  color: rgb(58, 58, 58);
+  font-size: 0.8em;
+}
+
+.notetitle{
+  font-size: 0.75em !important;
+  max-height: fit-content;
+  padding-right: 2em;
+}
+.newnotetitle{
+  margin-left: 1em;
+}
+
+.notetitles-box{
+  padding: 0.15em 1em 0 1em;
+  cursor: pointer;
+}
+.notetitles-box:hover{
+  text-decoration: underline;
+  color: black;
+}
+.notetitles-box h6 {
+  font-weight: 600;
+  font-size: 0.7em;
+}
+
+.newnotetitle-input{
+  width: 14.5em;
+  height: 2em;
+  font-size: 0.7em;
+  padding: 0.2em;
+  background-color: inherit;
+  border: none;
+  border-bottom: 1px solid gray;
+  border-radius: 2px;
+}
+.newnotetitle-input:focus{
+  outline: none;
+}
+
+
+
+
+
 /* SWEET ALERT STYLING */
 .my-custom-title {
   font-size: 1.2em !important; 

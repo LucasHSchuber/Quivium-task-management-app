@@ -17,6 +17,7 @@ import Upcoming from "./pages/upcoming";
 import List from "./pages/list"
 import PostItWall from "./pages/postItWall";
 import Archive from "./pages/archive";
+import Note from "./pages/note"
 
 import { TaskProvider } from "./context/taskContext"; 
 
@@ -66,6 +67,9 @@ function MainContent() {
             </div>
             <div className="">
               <Routes><Route path="/archive" element={<Archive />} /></Routes>
+            </div>
+            <div className="">
+              <Routes><Route path="/note/:note_id" element={<Note />} /></Routes>
             </div>
         </div>
       </div>

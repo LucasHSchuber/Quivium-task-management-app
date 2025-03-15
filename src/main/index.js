@@ -710,6 +710,25 @@ function createTables() {
       `,
     },
     {
+      name: "notes",
+      query: `
+        CREATE TABLE IF NOT EXISTS notes (
+          note_id INTEGER PRIMARY KEY AUTOINCREMENT,
+          title TEXT NOT NULL,
+          text TEXT,
+          updated TEXT,
+          is_deleted INTEGER DEFAULT 0,
+          created TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          user_id INTEGER NOT NULL,
+          task_id INTEGER,  
+          list_id INTEGER,  
+          FOREIGN KEY (user_id) REFERENCES users(user_id),
+          FOREIGN KEY (task_id) REFERENCES tasks(task_id),
+          FOREIGN KEY (list_id) REFERENCES lists(list_id)
+        )
+      `,
+    },
+    {
       name: "schema_version",
       query: `
       CREATE TABLE IF NOT EXISTS schema_version (
@@ -1705,6 +1724,7 @@ ipcMain.handle("updateTask", async (event, args) => {
 });
 
 
+//Delete task
 ipcMain.handle('deleteTask', async (event, task_id, user_id) => {
   if (!user_id || !task_id) {
       throw new Error("Missing required user data for deleteTask");
@@ -1916,5 +1936,253 @@ ipcMain.handle("createNewSubtask", async (event, args) => {
   } catch (err) {
     console.error("Error adding post:", err.message);
     return { error: err.message };
+  }
+});
+
+
+
+
+// NOTES 
+
+//create new bote
+ipcMain.handle("createNewNoteTitle", async (event, args) => {
+  try {
+    if (!args || typeof args !== "object") {
+      throw new Error("Invalid arguments received for createNewNoteTitle");
+    }
+
+    const { user_id, task_id, list_id, title } = args;
+
+    if (!user_id || !title) {
+      throw new Error("Missing required user data for createNewNoteTitle");
+    }
+    // Insert the new user into the database
+    await db.run(
+      `
+      INSERT INTO notes (title, user_id, list_id, task_id)
+      VALUES (?, ?, ?, ?)
+      `,
+      [title, user_id, list_id, task_id],
+    );
+    return { success: true, status: 201, message: "New note title created successfully" };
+    
+  } catch (err) {
+    console.error("Error adding task:", err.message);
+    return { error: err.message };
+  }
+});
+
+// Get all task notes by list_id
+ipcMain.handle("getAllTaskNotes", async (event, user_id, list_id) => {
+  if (!user_id || !list_id) {
+    throw new Error("Missing required parameters for getAllTaskNotes");
+  }
+  const query = `
+    SELECT 
+      t.task_id, t.title, t.description, t.due_date, 
+      t.updated, t.is_completed, t.list_id,
+      n.note_id, n.title AS note_title, n.text AS note_text, n.updated AS note_updated, n.created AS note_created
+    FROM tasks t
+    LEFT JOIN notes n ON t.task_id = n.task_id AND n.is_deleted = 0
+    WHERE t.user_id = ? AND t.list_id = ? AND t.is_deleted = 0 
+
+    UNION
+
+    SELECT 
+      NULL AS task_id, NULL AS title, NULL AS description, NULL AS due_date, 
+      NULL AS updated, NULL AS is_completed, n.list_id,
+      n.note_id, n.title AS note_title, n.text AS note_text, n.updated AS note_updated, n.created AS note_created
+    FROM notes n
+    WHERE n.list_id = ? AND n.task_id IS NULL AND n.is_deleted = 0 
+    ORDER BY is_completed ASC, due_date ASC;
+  `;
+
+  try {
+    const taskNotes = await new Promise((resolve, reject) => {
+      const db = new sqlite3.Database(dbPath);
+
+      db.all(query, [user_id, list_id, list_id], (error, rows) => {
+        if (error) {
+          db.close();
+          return reject({ status: 400, errorMessage: error.message });
+        }
+
+        const taskMap = new Map();
+        const listNotes = [];
+
+        rows.forEach(row => {
+          if (row.task_id) {
+            // Task-based notes
+            if (!taskMap.has(row.task_id)) {
+              taskMap.set(row.task_id, {
+                task_id: row.task_id,
+                title: row.title,
+                description: row.description,
+                due_date: row.due_date,
+                updated: row.updated,
+                is_completed: row.is_completed,
+                notes: []
+              });
+            }
+
+            if (row.note_id) {
+              taskMap.get(row.task_id).notes.push({
+                note_id: row.note_id,
+                title: row.note_title,
+                text: row.note_text,
+                updated: row.note_updated,
+                created: row.note_created
+              });
+            }
+          } else {
+            // Notes directly linked to the list
+            if (row.note_id) {
+              listNotes.push({
+                note_id: row.note_id,
+                title: row.note_title,
+                text: row.note_text,
+                updated: row.note_updated,
+                created: row.note_created
+              });
+            }
+          }
+        });
+
+        db.close();
+        resolve({ tasks: Array.from(taskMap.values()), listNotes });
+      });
+    });
+
+    return { status: 200, taskNotes };
+  } catch (error) {
+    console.error("Error fetching tasks with notes:", error);
+    return { statusCode: 500, errorMessage: error.message || "Internal Server Error" };
+  }
+});
+
+// // Get all task notes by list_id
+// ipcMain.handle("getAllTaskNotes", async (event, user_id, list_id) => {
+//   if (!user_id || !list_id) {throw new Error("Missing required parameters for getAllTaskNotes")}
+//   const query = `
+//     SELECT 
+//       t.task_id, t.title, t.description, t.due_date, 
+//       t.updated, t.is_completed, t.list_id,
+//       n.note_id, n.title AS note_title, n.text AS note_text, n.updated AS note_updated, n.created AS note_created
+//     FROM tasks t
+//     LEFT JOIN notes n ON t.task_id = n.task_id 
+//     WHERE t.user_id = ? AND t.list_id = ? AND t.is_deleted = 0
+//     ORDER BY t.is_completed ASC, t.due_date ASC;
+//   `;
+//   try {
+//     const taskNotes = await new Promise((resolve, reject) => {
+//       const db = new sqlite3.Database(dbPath);
+
+//       db.all(query, [user_id, list_id], (error, rows) => {
+//         if (error) {
+//           db.close();
+//           return reject({ status: 400, errorMessage: error.message });
+//         }
+//         const taskMap = new Map();
+//         rows.forEach(row => {
+//           if (!taskMap.has(row.task_id)) {
+//             taskMap.set(row.task_id, {
+//               task_id: row.task_id,
+//               title: row.title,
+//               description: row.description,
+//               due_date: row.due_date,
+//               updated: row.updated,
+//               is_completed: row.is_completed,
+//               notes: [] 
+//             });
+//           }
+
+//           if (row.note_id) {
+//             taskMap.get(row.task_id).notes.push({
+//               note_id: row.note_id,
+//               title: row.note_title,
+//               text: row.note_text,
+//               updated: row.note_updated,
+//               created: row.note_created
+//             });
+//           }
+//         });
+
+//         db.close();
+//         resolve(Array.from(taskMap.values())); 
+//       });
+//     });
+
+//     return { status: 200, taskNotes: taskNotes };
+//   } catch (error) {
+//     console.error("Error fetching tasks with notes:", error);
+//     return { statusCode: 500, errorMessage: error.message || "Internal Server Error" };
+//   }
+// });
+
+
+// update text in note
+ipcMain.handle('updateNoteText', async (event, args) => {
+
+  if (!args || typeof args !== "object") {
+    throw new Error("Invalid arguments received for updateNoteText");
+  }
+
+  const { user_id, note_id, text } = args;
+
+  const updateQuery = 'UPDATE notes SET text = ?, updated = CURRENT_TIMESTAMP WHERE note_id = ? AND user_id = ?';
+  const selectQuery = `SELECT * FROM notes WHERE note_id = ? AND user_id = ?`;
+
+  try {
+      await new Promise((resolve, reject) => {
+          db.run(updateQuery, [text, note_id, user_id], (error, results) => {
+              if (error) {
+                  console.error('Error updating note:', error);
+                  reject(error);
+              } else {
+                  resolve(results);
+              }
+          });
+      });
+
+      const updatedNote = await new Promise((resolve, reject) => {
+        db.get(selectQuery, [note_id, user_id], (error, row) => {
+          if (error) {
+            console.error("Error fetching updated note:", error);
+            reject(error);
+          } else {
+            resolve(row); // Returns the updated row
+          }
+        });
+      });
+
+      return { status: 200, note_id: note_id, note: updatedNote, message: 'Note text updated successfully' };
+  } catch (error) {
+      console.error('Error in updateNoteText:', error);
+      return { status: 500, message: 'Failed to updated note text' };
+  }
+});
+
+
+// Delete note
+ipcMain.handle('deleteNote', async (event, note_id, user_id) => {
+  if (!user_id || !note_id) {
+      throw new Error("Missing required user data for deleteNote");
+  }
+  const query = 'UPDATE notes SET is_deleted = 1 WHERE user_id = ? AND note_id = ?';
+  try {
+      const result = await new Promise((resolve, reject) => {
+          db.run(query, [user_id, note_id], (error, results) => {
+              if (error) {
+                  console.error('Error updating note:', error);
+                  reject(error);
+              } else {
+                  resolve(results);
+              }
+          });
+      });
+      return { status: 200, task_id: note_id, message: 'Note deleted successfully' };
+  } catch (error) {
+      console.error('Error in deleteNote:', error);
+      return { status: 500, message: 'Failed to deleted note' };
   }
 });

@@ -71,6 +71,14 @@ const api = {
   getTaskWithSubtasks: args => ipcRenderer.invoke("getTaskWithSubtasks", args), // get a task with its subtasks
   createNewSubtask: args => ipcRenderer.invoke("createNewSubtask", args), // create new subtask
 
+  // NOTES
+  createNewNoteTitle: args => ipcRenderer.invoke("createNewNoteTitle", args), // create note
+  getAllTaskNotes: (user_id, list_id) => ipcRenderer.invoke("getAllTaskNotes", user_id, list_id), // fetch all task notes from sqlite
+  updateNoteText: args => ipcRenderer.invoke("updateNoteText", args), // update note text 
+  deleteNote: (note_id, user_id) => ipcRenderer.invoke("deleteNote", note_id, user_id), // delete n+note 
+
+
+
 
   on: (channel, callback) => {
     const validChannels = ["upload-progress", "update-not-available", "update-available", "download-progress", "update-downloaded", "update-error", "upload-error", "upload-tus-progress", "success", "upload-canceled"]; 
@@ -80,6 +88,7 @@ const api = {
   },
   removeAllListeners: (channel) => { ipcRenderer.removeAllListeners(channel);},
 }
+
 
 
 // Use `contextBridge` APIs to expose Electron APIs to renderer only if context isolation is enabled, otherwise just add to the DOM global.

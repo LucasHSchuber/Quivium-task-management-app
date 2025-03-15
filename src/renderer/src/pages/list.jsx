@@ -41,7 +41,7 @@ function List() {
         fetchAllTasks()
         triggerTaskUpdate(); 
     }
-    const onSuccessDelete = () => {fetchAllTasks(), setShowTaskManager(false)}
+    const onSuccessDelete = () => {fetchAllTasks(); setShowTaskManager(false); triggerTaskUpdate() }
 
 
     // Clear taskmManager component on mount
@@ -226,7 +226,8 @@ function List() {
                             </div>
                         ))
                 ) : (
-                    <h6 style={{ fontSize: "0.8em" }}><em>No tasks found</em></h6>
+                    // <h6 style={{ fontSize: "0.8em" }}><em>No tasks found</em></h6>
+                    null
                 )}
                 <div>
                     <button onClick={handleShowAddTaskInput} className="addlist-button">{showNewTask ? "- Add New Task" : "+ Add New Task"}</button>
@@ -271,7 +272,8 @@ function List() {
                             </div>
                         ))
                 ) : (
-                    <h6 style={{ fontSize: "0.8em" }}><em>No tasks found</em></h6>
+                    // <h6 style={{ fontSize: "0.8em" }}><em>No tasks found</em></h6>
+                    null
                 )}
                 <div>
                     <button onClick={handleShowAddTaskInput} className="addlist-button">{showNewTask ? "- Add New Task" : "+ Add New Task"}</button>
@@ -331,7 +333,7 @@ function List() {
         {showNewTask && < AddNewTask list_id={list_id} onSuccess={onSuccessNewTask}/>}
         {showTaskManager && < TaskManager show={showTaskManager} list_id={list_id} taskId={taskId} due_date={due_date} onSuccess={onSuccessNewTask} onSuccessDelete={onSuccessDelete}/>}
         {showTaskDetails && < TaskDetails show={showTaskDetails} detailsTask={detailsTask} listColor={listColor} listName={listName} onSuccess={onSuccessNewTask}/>}
-        {showNotes && < Notes show={showNotes} list_id={list_id} tasks={tasks} />}
+        {showNotes && < Notes show={showNotes} list_id={list_id} tasks={tasks} listColor={listColor} />}
 
     </div>
   );
