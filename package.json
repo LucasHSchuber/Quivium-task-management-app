@@ -1,8 +1,8 @@
 {
-  "name": "myelectronapp",
-  "productName": "MyElectronApp",
+  "name": "quivium",
+  "productName": "Quivium",
   "version": "1.0.1",
-  "description": "MyElectronApp",
+  "description": "Quivium",
   "main": "./out/main/index.js",
   "author": "Lucas H. Schuber",
   "homepage": "https://www.electronjs.org",

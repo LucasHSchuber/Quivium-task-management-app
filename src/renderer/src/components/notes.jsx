@@ -67,8 +67,10 @@ function Notes({ show, list_id, tasks, listColor }) {
             const createResponse = await window.api.createNewNoteTitle(data)
             console.log('createResponse', createResponse);
             if (createResponse.status === 201) {
-                fetchAllTaskNotes()
-                setNewNoteTitle("")
+                setTimeout(() => {
+                    fetchAllTaskNotes()
+                    setNewNoteTitle("")
+                }, 250);
             }
         } catch (error) {
             console.log('error', error);
@@ -77,9 +79,11 @@ function Notes({ show, list_id, tasks, listColor }) {
 
 
 
+
         
     const handleOpenNote = (note_id, note) => {
         console.log('note_id', note_id);
+        fetchAllTaskNotes()
         navigate(`/note/${note_id}`, {
             state: {
             list_id,
@@ -120,15 +124,15 @@ function Notes({ show, list_id, tasks, listColor }) {
                             <div key={task.task_id} className="mb-4 notetask-box">
                                 <div className="d-flex justify-content-between">
                                     <div style={{ borderLeft: `3.5px solid ${listColor}`, borderRadius: "3px" }}>
-                                        <h6 className="pl-2 notetitle"><b>{task.title}</b></h6>
+                                        <h6 className={`pl-2 notetitle ${task.is_completed === 1 ? "notetitle-completed" : ""}`}><b>{task.title}</b></h6>
                                     </div>
                                     <FontAwesomeIcon onClick={() => handleShowNoteTitleInput(task.task_id)} title="Add new task" className="mr-1 addnote-button" icon={activeTaskId === task.task_id ? faMinus : faPlus} size="xs" />
                                 </div>
                                 {task.notes.length > 0 && task.notes.map(note => (
                                     <div key={note.note_id} className="d-flex justify-content-between">
-                                        <div className="d-flex  notetitles-box" onClick={() => handleOpenNote(note.note_id, note)}>
+                                        <div className={`d-flex notetitles-box`} onClick={() => handleOpenNote(note.note_id, note)}>
                                             <h6 className="mr-1" style={{ color: listColor }}><FontAwesomeIcon icon={faMinus} size="xs" /></h6>
-                                            <h6>{note.title}</h6>
+                                            <h6 className={`${task.is_completed === 1 ? "notetitle-completed" : ""}`}>{note.title}</h6>
                                         </div>    
                                         <FontAwesomeIcon onClick={() => deleteNoteTitle(note.note_id)} title="Delete note" className="mr-5 deletenote-button" icon={faTrash} size="xs"/>
                                     </div>
@@ -138,7 +142,6 @@ function Notes({ show, list_id, tasks, listColor }) {
                                         <h6 className="mt-1" style={{ color: listColor }}><FontAwesomeIcon icon={faMinus} size="xs" /></h6>
                                         <input value={newNoteTitle} onChange={(e) => handleNewNoteTitle(e.target.value, task.task_id)} className="mb-1 mx-1 newnotetitle-input" placeholder="Note title"></input>
                                         <button onClick={() => handleCreateNewNoteTitle(task.task_id)} className="createnotetitle-button"><FontAwesomeIcon title="Create new note" icon={faPlus} size="xs"/></button>
-                                    {/* <FontAwesomeIcon icon={faMinus} size="xs" /> */}
                                     </div>
                                 ) : null}
                             </div>

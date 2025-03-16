@@ -1,177 +1,120 @@
-# Database Structure and Tables
+# Database Schema Documentation
 
-## Overview
-This document provides an overview of the database schema, including table definitions, relationships, and key fields.
+This document describes the database schema used in the application. The database consists of several tables that store information about users, tasks, lists, notes, and other related data.
 
 ## Tables
 
 ### 1. **users**
-Stores user information.
+Stores user information and authentication details.
 
-- **Primary Key:** `user_id`
-- **Fields:**
-  - `email` (TEXT, NOT NULL)
-  - `firstname` (TEXT, NOT NULL)
-  - `lastname` (TEXT, NOT NULL)
-  - `password` (TEXT, NOT NULL)
-  - `city` (TEXT)
-  - `mobile` (VARCHAR)
-  - `lang` (TEXT, NOT NULL)
-  - `token` (TEXT)
-  - `created` (TEXT, NOT NULL, DEFAULT `CURRENT_TIMESTAMP`)
-
----
-
-### 2. **_projects**
-Stores basic project information for offline availability.
-
-- **Primary Key:** `project_id_`
-- **Fields:**
-  - `project_uuid` (TEXT, NOT NULL)
-  - `projectname` (TEXT, NOT NULL)
-  - `start` (TEXT, NOT NULL)
-  - `lang` (TEXT, NOT NULL)
+#### Columns:
+- `user_id` (INTEGER, PRIMARY KEY, AUTOINCREMENT) - Unique identifier for each user.
+- `email` (TEXT, UNIQUE, NOT NULL) - User's email address.
+- `firstname` (TEXT) - User's first name.
+- `lastname` (TEXT) - User's last name.
+- `password` (TEXT, NOT NULL) - Hashed password for authentication.
+- `city` (TEXT) - User's city.
+- `mobile` (VARCHAR) - User's mobile phone number.
+- `token` (TEXT) - Authentication token.
+- `created` (TEXT, DEFAULT CURRENT_TIMESTAMP, NOT NULL) - Timestamp of user creation.
 
 ---
 
-### 3. **ft_projects**
-Tracks projects with files uploaded to the FTP server.
+### 2. **lists**
+Stores task lists created by users.
 
-- **Primary Key:** `ft_project_id`
-- **Foreign Keys:** 
-  - `user_id` → `users(user_id)`
-  - `project_id` → `projects(project_id)`
-- **Fields:**
-  - `project_uuid` (TEXT)
-  - `projectname` (TEXT)
-  - `is_sent` (BOOLEAN, DEFAULT `0`)
-  - `created` (TEXT, DEFAULT `CURRENT_TIMESTAMP`)
-  - `user_id` (INTEGER)
-  - `project_id` (INTEGER)
+#### Columns:
+- `list_id` (INTEGER, PRIMARY KEY, AUTOINCREMENT) - Unique identifier for each list.
+- `name` (TEXT, NOT NULL) - Name of the list.
+- `color` (TEXT) - Color associated with the list.
+- `is_deleted` (INTEGER, DEFAULT 0) - Indicates if the list is deleted (0 = No, 1 = Yes).
+- `archived` (INTEGER, DEFAULT 0) - Indicates if the list is archived (0 = No, 1 = Yes).
+- `archived_date` (TEXT) - Timestamp when the list was archived.
+- `created` (TEXT, DEFAULT CURRENT_TIMESTAMP, NOT NULL) - Timestamp of list creation.
+- `user_id` (INTEGER, NOT NULL) - Reference to the user who owns the list.
 
 ---
 
-### 4. **ft_files**
-Stores files uploaded to the FTP server for corresponding projects.
+### 3. **tasks**
+Stores tasks associated with lists.
 
-- **Primary Key:** `ft_file_id`
-- **Foreign Key:** `ft_project_id` → `ft_projects(ft_project_id)`
-- **Fields:**
-  - `filename` (VARCHAR(255), NOT NULL)
-  - `filepath` (VARCHAR(255))
-  - `uploaded_at` (TIMESTAMP, DEFAULT `CURRENT_TIMESTAMP`)
-
----
-
-### 5. **projects**
-Stores detailed project information.
-
-- **Primary Key:** `project_id`
-- **Foreign Key:** `user_id` → `users(user_id)`
-- **Fields:**
-  - `project_uuid` (TEXT, NOT NULL)
-  - `projectname` (TEXT, NOT NULL)
-  - `photographername` (TEXT)
-  - `project_date` (TEXT, NOT NULL)
-  - `type` (TEXT, NOT NULL)
-  - `anomaly` (TEXT)
-  - `merged_teams` (TEXT)
-  - `unit` (BOOLEAN)
-  - `lang` (TEXT)
-  - `created` (TEXT, DEFAULT `CURRENT_TIMESTAMP`)
-  - `alert_sale` (BOOLEAN)
-  - `is_deleted` (BOOLEAN, DEFAULT `0`)
-  - `is_sent` (BOOLEAN, DEFAULT `0`)
-  - `is_sent_id` (INTEGER)
-  - `files_uploaded` (BOOLEAN, DEFAULT `0`)
-  - `sent_date` (TEXT)
+#### Columns:
+- `task_id` (INTEGER, PRIMARY KEY, AUTOINCREMENT) - Unique identifier for each task.
+- `title` (TEXT, NOT NULL) - Title of the task.
+- `description` (TEXT) - Detailed description of the task.
+- `due_date` (TEXT) - Due date for task completion.
+- `updated` (TEXT) - Timestamp of last update.
+- `is_deleted` (INTEGER, DEFAULT 0) - Indicates if the task is deleted.
+- `is_completed` (INTEGER, DEFAULT 0) - Indicates if the task is completed.
+- `created` (TEXT, DEFAULT CURRENT_TIMESTAMP, NOT NULL) - Timestamp of task creation.
+- `list_id` (INTEGER, NOT NULL) - Reference to the list this task belongs to.
+- `user_id` (INTEGER, NOT NULL) - Reference to the user who created the task.
 
 ---
 
-### 6. **knowledgebase**
-Stores articles and downloadable files for offline access.
+### 4. **subtasks**
+Stores subtasks associated with tasks.
 
-- **Primary Key:** `id`
-- **Fields:**
-  - `article_id` (TEXT, UNIQUE, NOT NULL)
-  - `title` (TEXT, UNIQUE, NOT NULL)
-  - `description` (TEXT, NOT NULL)
-  - `tags` (TEXT)
-  - `langs` (TEXT)
-  - `files` (TEXT)
-  - `author` (TEXT)
-  - `created_at` (TEXT, NOT NULL)
-  - `updated_at` (TEXT)
-  - `deleted` (INTEGER, DEFAULT `0`)
+#### Columns:
+- `subtask_id` (INTEGER, PRIMARY KEY, AUTOINCREMENT) - Unique identifier for each subtask.
+- `title` (TEXT, NOT NULL) - Title of the subtask.
+- `description` (TEXT) - Detailed description of the subtask.
+- `due_date` (TEXT) - Due date for subtask completion.
+- `updated` (TEXT) - Timestamp of last update.
+- `is_deleted` (INTEGER, DEFAULT 0) - Indicates if the subtask is deleted.
+- `is_completed` (INTEGER, DEFAULT 0) - Indicates if the subtask is completed.
+- `created` (TEXT, DEFAULT CURRENT_TIMESTAMP, NOT NULL) - Timestamp of subtask creation.
+- `task_id` (INTEGER, NOT NULL) - Reference to the parent task.
 
 ---
 
-### 7. **timereport**
-Logs time reports for projects.
+### 5. **posts**
+Stores user posts.
 
-- **Primary Key:** `id`
-- **Foreign Keys:**
-  - `user_id` → `users(user_id)`
-  - `project_id` → `projects(project_id)`
-- **Fields:**
-  - `projectname` (TEXT, NOT NULL)
-  - `starttime` (TEXT, NOT NULL)
-  - `endtime` (TEXT, NOT NULL)
-  - `breaktime` (REAL, DEFAULT `0.5`)
-  - `miles` (REAL, DEFAULT `0`)
-  - `tolls` (REAL, DEFAULT `0`)
-  - `park` (REAL, DEFAULT `0`)
-  - `other_fees` (REAL, DEFAULT `0`)
-  - `is_sent` (BOOLEAN, DEFAULT `0`)
-  - `created` (TEXT, DEFAULT `CURRENT_TIMESTAMP`)
-  - `project_date` (TEXT, NOT NULL)
+#### Columns:
+- `post_id` (INTEGER, PRIMARY KEY, AUTOINCREMENT) - Unique identifier for each post.
+- `title` (TEXT, NOT NULL) - Title of the post.
+- `text` (TEXT) - Content of the post.
+- `updated` (TEXT) - Timestamp of last update.
+- `is_deleted` (INTEGER, DEFAULT 0) - Indicates if the post is deleted.
+- `created` (TEXT, DEFAULT CURRENT_TIMESTAMP, NOT NULL) - Timestamp of post creation.
+- `user_id` (INTEGER, NOT NULL) - Reference to the user who created the post.
 
 ---
 
-### 8. **schema_version**
-Tracks applied database schema versions.
+### 6. **notes**
+Stores user notes associated with tasks and lists.
 
-- **Primary Key:** `id`
-- **Fields:**
-  - `version` (INTEGER, NOT NULL)
-  - `applied_at` (TEXT, DEFAULT `CURRENT_TIMESTAMP`)
-
----
-
-### 9. **news**
-Manages news entries and read statuses.
-
-- **Primary Key:** `id`
-- **Fields:**
-  - `title` (TEXT)
-  - `content` (TEXT)
-  - `author` (TEXT)
-  - `created_at` (TEXT)
-  - `updated_at` (TEXT)
-  - `is_read` (BOOLEAN, DEFAULT `0`)
-  - `is_sent_date` (TIMESTAMP, DEFAULT `NULL`)
+#### Columns:
+- `note_id` (INTEGER, PRIMARY KEY, AUTOINCREMENT) - Unique identifier for each note.
+- `title` (TEXT, NOT NULL) - Title of the note.
+- `text` (TEXT) - Content of the note.
+- `updated` (TEXT) - Timestamp of last update.
+- `is_deleted` (INTEGER, DEFAULT 0) - Indicates if the note is deleted.
+- `created` (TEXT, DEFAULT CURRENT_TIMESTAMP, NOT NULL) - Timestamp of note creation.
+- `user_id` (INTEGER, NOT NULL) - Reference to the user who created the note.
+- `task_id` (INTEGER) - Reference to the associated task (if any).
+- `list_id` (INTEGER) - Reference to the associated list (if any).
 
 ---
 
-### 10. **teams**
-Stores data about teams and their configurations.
+### 7. **schema_version**
+Tracks database schema versions and updates.
 
-- **Primary Key:** `team_id`
-- **Foreign Key:** `project_id` → `projects(project_id)`
-- **Fields:**
-  - `teamname` (TEXT, NOT NULL)
-  - `amount` (INTEGER)
-  - `leader_firstname`, `leader_lastname`, `leader_address`, etc. (TEXT)
-  - `portrait` (BOOLEAN, DEFAULT `0`)
-  - `is_deleted` (BOOLEAN, DEFAULT `0`)
-  - `created` (TEXT, DEFAULT `CURRENT_TIMESTAMP`)
+#### Columns:
+- `id` (INTEGER, PRIMARY KEY, AUTOINCREMENT) - Unique identifier.
+- `version` (INTEGER, NOT NULL) - Schema version number.
+- `applied_at` (TEXT, DEFAULT CURRENT_TIMESTAMP, NOT NULL) - Timestamp when the version was applied.
 
 ---
 
-### 11. **teams_history**
-Keeps track of historical team data.
+## Foreign Key Relationships
+- `users` ↔ `lists` (1-to-Many) → A user can have multiple lists.
+- `lists` ↔ `tasks` (1-to-Many) → A list can have multiple tasks.
+- `tasks` ↔ `subtasks` (1-to-Many) → A task can have multiple subtasks.
+- `users` ↔ `tasks` (1-to-Many) → A user can create multiple tasks.
+- `tasks` ↔ `notes` (1-to-Many) → A task can have multiple notes.
+- `lists` ↔ `notes` (1-to-Many) → A list can have multiple notes.
 
-- **Primary Key:** `team_history_id`
-- **Foreign Key:** `team_id` → `teams(team_id)`
-- **Fields:**
-  - Similar to `teams` table with additional historical fields.
+This database schema efficiently supports **task management, note-taking, and list organization**, ensuring seamless offline and online functionality.
+

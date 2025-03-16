@@ -8,7 +8,7 @@ import convertToLocalTime from "../assets/js/convertToLocalTime";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { } from "@fortawesome/free-regular-svg-icons";
-import { faMinus, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { faMinus, faSpinner, faLeftLong } from "@fortawesome/free-solid-svg-icons";
 import Notes from "../components/notes";
 
 
@@ -24,6 +24,7 @@ function Note() {
 
     const { note_id } = useParams(); 
     const location = useLocation();
+    const navigate = useNavigate();
     const timeoutRef = useRef(null)
     const { list_id, tasks, listColor, note } = location.state || {};
     console.log('text', note.text);
@@ -31,19 +32,29 @@ function Note() {
     console.log('note_id', note_id);
 
     useEffect(() => {
-      if (note) {
-        setNoteText(note.text || "");
+      if (note && note.text !== undefined) { 
+          console.log("Updating setNoteText");
+          setLastSaved("")
+          setNoteText(note.text);
       }
     }, [note_id, note]);
+  
+
+    
+    // navigate back
+    const navigateback = () => {
+      navigate(`/list/${list_id}`)
+    }
     
 
     const handleUpdateText = (value) => {
       console.log('value', value);
-      setUpdatedText(value)
-      handleSaveText(value)
+      setNoteText(value)
+      handleSaveText(value) // trigger handleSaveText 
     }
     
 
+    // Save text
     const handleSaveText = async (text) => {
       const user_id = localStorage.getItem("user_id");
       const data = {
@@ -76,7 +87,6 @@ function Note() {
       const seconds = String(now.getSeconds()).padStart(2, "0");
     
       const currentTimestamp = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-    
       let isRecent = false;
       
       if (saved) {
@@ -86,7 +96,6 @@ function Note() {
       }
       console.log('currentTimestamp', currentTimestamp);
       console.log('isRecent', isRecent);
-    
       if (isRecent) {
         setHasRecentlyBeenSaved(true);
         if (timeoutRef.current) {
@@ -98,7 +107,6 @@ function Note() {
           timeoutRef.current = null;
         }, 1000);
       }
-      // return { currentTimestamp, isRecent };
     };
     
   
@@ -107,6 +115,7 @@ function Note() {
 
   return (
     <div className="note-wrapper">
+      <button onClick={navigateback} className="backbutton"><FontAwesomeIcon icon={faLeftLong} size="sm" /></button>
         <div className="note-box">
             <div className="d-flex">
                 <h6 className="mr-2" style={{ color: listColor }}><FontAwesomeIcon icon={faMinus} size="sm" /></h6>
@@ -115,11 +124,14 @@ function Note() {
             <div className="noteinfo">
                 <h6><span>Created:</span> <em>{convertToLocalTime(note.created)}</em></h6>
                 <div className="d-flex">
-                  <h6><span>Last saved:</span> <em className={`${hasRecentlyBeenSaved ? "noterecentlysaved" : ""}`}>{lastSaved ? convertToLocalTime(lastSaved) : convertToLocalTime(note.updated)}</em></h6>
-                  <FontAwesomeIcon className={`ml-2 ${hasRecentlyBeenSaved ? "noterecentlysaved-spinner" : ""}`} icon={faSpinner} size="sm" />
+                  {hasRecentlyBeenSaved ? (
+                    <h6 style={{ color: "green", fontWeight: "700" }}><b>Saving</b> <FontAwesomeIcon className={`ml-2 ${hasRecentlyBeenSaved ? "noterecentlysaved-spinner" : ""}`} icon={faSpinner} /></h6>
+                  ) : (
+                    <h6><span>Last saved:</span> <em className={`${hasRecentlyBeenSaved ? "noterecentlysaved" : ""}`}>{note.updated === null && !lastSaved ? "" : lastSaved ? convertToLocalTime(lastSaved) : convertToLocalTime(note.updated)}</em></h6>
+                  )}                  
                 </div>
             </div>
-            <textarea onChange={(e) => handleUpdateText(e.target.value)} defaultValue={noteText ? noteText : "" } placeholder={noteText ? noteText : "Enter text here"} className="textarea-notes" rows={21}></textarea>
+            <textarea onChange={(e) => handleUpdateText(e.target.value)} value={noteText || ""} className="textarea-notes" rows={21}></textarea>
             {/* <div className="mt-3">
                 <button className="mr-1 canceltask-button">Cancel</button>
                 <button onClick={handleSaveText} className="savetask-button">Save</button>

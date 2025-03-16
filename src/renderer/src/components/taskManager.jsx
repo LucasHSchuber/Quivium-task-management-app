@@ -161,7 +161,7 @@ function TaskManager({ show, list_id, taskId, due_date, onSuccess, onSuccessDele
 
          <hr></hr>
 
-        <form onSubmit={handleSave}>
+        <form>
             {isEditing ? (
                 <div>
                     <div className="form-group">
@@ -191,16 +191,13 @@ function TaskManager({ show, list_id, taskId, due_date, onSuccess, onSuccessDele
                             ))}
                         </select>
                     </div>
-
-                    <>
-                        <div>
-                            <button onClick={handleCancel} className="mt-3 canceltask-button">Cancel</button>
-                        </div>
-                        <div>
-                            <button type="submit" onClick={(e) => handleSave()} className="mt-2 savetask-button">Save</button>
-                        </div>
-                    </>
-                </div>
+                    <div>
+                        <button onClick={handleCancel} className="mt-3 canceltask-button">Cancel</button>
+                    </div>
+                    <div>
+                        <button onClick={(e) => handleSave(e)} className="mt-2 savetask-button">Save</button>
+                    </div>
+            </div>
             ) : (
                 <div>
                     <p><b>Due Date:</b> {task.due_date || "No due date"}</p>

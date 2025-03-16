@@ -203,7 +203,9 @@
 .newnotetitle{
   margin-left: 1em;
 }
-
+.notetitle-completed{
+  color: rgb(176, 176, 176) !important;
+}
 .notetitles-box{
   padding: 0.15em 1em 0 1em;
   cursor: pointer;
@@ -230,6 +232,7 @@
 .newnotetitle-input:focus{
   outline: none;
 }
+
 
 
 

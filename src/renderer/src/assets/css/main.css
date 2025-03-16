@@ -429,12 +429,16 @@
 /* NOTES */
 .note-wrapper {
   margin: 0 0 0 6.7em;
+  background-color: rgb(249, 249, 249) !important;
+  padding: 3em 0 4em 2em;
+  min-height: 99vh;
 }
 .note-box{
   background-color: rgb(249, 249, 249) !important;
-  padding: 5em 0 7em 2em;
+  /* padding: 5em 0 7em 2em; */
+  padding-top: 2em;
   width: 99%;
-  min-height: 99vh;
+  
   border-radius: 5px !important;
   margin: 0.2em;
 }

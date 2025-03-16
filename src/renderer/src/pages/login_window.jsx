@@ -133,7 +133,7 @@ function Login_window() {
         <div className="spinning-logo-login">
           <img src={q} alt="fotografportalen" />
           <p>
-            <em>MyApp</em>
+            <em>Quivium</em>
           </p>
         </div>
       </div>

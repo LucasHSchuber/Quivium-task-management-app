@@ -1,5 +1,5 @@
 appId: COM.ELECTRON.APP
-productName: MyElectronApp
+productName: Quivium
 directories:
   buildResources: build
 files:
@@ -19,7 +19,7 @@ win:
         - x64
         - ia32
   icon: resources/logo.ico 
-  executableName: MyElectronApp
+  executableName: Quivium
   asarUnpack: ["**/*.node"]
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
