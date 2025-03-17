@@ -267,6 +267,7 @@ function Sidemenu() {
                                                 <div className="d-flex">
                                                     <p className="taskamount">{list.tasks.length}</p>
                                                     <FontAwesomeIcon 
+                                                        title="Open list menu"
                                                         className="list-minimenu" 
                                                         onClick={(event) => {
                                                             event.stopPropagation(); 
@@ -310,8 +311,8 @@ function Sidemenu() {
                                         value={selectedColor}
                                         onChange={handleColorChange}
                                     />
-                                    <input onChange={(e) => handleListName(e.target.value)} className="mb-1 mx-1 newlist-input" placeholder="List name"></input>
-                                    <button onClick={createNewList} className="createlist-button"><FontAwesomeIcon title="Create new list" icon={faPlus} size="xs"/></button>
+                                    <input onChange={(e) => handleListName(e.target.value)} className="mb-1 ml-1 newlist-input" placeholder="List name"></input>
+                                    <button title="Create new list" onClick={createNewList} className="createlist-button"><FontAwesomeIcon icon={faPlus} size="xs"/></button>
                                 </div>
                             )}
                         </div>

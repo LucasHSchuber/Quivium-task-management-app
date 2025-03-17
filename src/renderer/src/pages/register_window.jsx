@@ -8,6 +8,9 @@ function Register_window() {
   //define states
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [firstname, setFirstname] = useState("");
+  const [lastname, setLastname] = useState("");
+
   const [passwordMessage, setPasswordMessage] = useState("");
   const [usernameMessage, setUsernameMessage] = useState("");
   const [errorLogginginMessage, setErrorLogginginMessage] = useState("");
@@ -24,15 +27,23 @@ function Register_window() {
 
   const handleUsernameChange = (e) => {
     setUsername(e.target.value);
-    console.log("e.target.value");
+    console.log(e.target.value);
     setUsernameMessage("");
     setErrorLogginginMessage("");
   };
   const handlePasswordChange = (e) => {
     setPassword(e.target.value);
-    console.log("e.target.value");
+    console.log(e.target.value);
     setPasswordMessage("");
     setErrorLogginginMessage("");
+  };
+  const handleFirstnameChange = (e) => {
+    setFirstname(e.target.value);
+    console.log(e.target.value);
+  };
+  const handleLastnameChange = (e) => {
+    setLastname(e.target.value)
+    console.log(e.target.value);
   };
 
 
@@ -82,7 +93,9 @@ function Register_window() {
       } else {
         const userData = {
           username: username,
-          password: password
+          password: password,
+          firstname: firstname,
+          lastname: lastname
         }
           try {
             const responseData = await window.api.createUser(userData);
@@ -113,7 +126,7 @@ function Register_window() {
     <div className="login_window-wrapper">
       <div className="login_window-content">
 
-        <h5 className="mb-3 mr-3" ><b>Activate account</b></h5>
+        <h5 className="mb-3 mr-3" ><b>Create account</b></h5>
         <div style={{ textAlign: "left", width: "110%", marginLeft: "-1.5em" }}>
           {usernameMessage || passwordMessage || errorLogginginMessage ? (
             <ul className="error">
@@ -163,11 +176,39 @@ function Register_window() {
               }}
             />
           </div>
+          <div>
+            <input
+              className={`form-input-field-login`}
+              placeholder="Firstname"
+              type="text"
+              value={firstname}
+              onChange={handleFirstnameChange}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  registerUser();
+                }
+              }}
+            />
+          </div>
+          <div>
+            <input
+              className={`form-input-field-login`}
+              placeholder="Lastname"
+              type="text"
+              value={lastname}
+              onChange={handleLastnameChange}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  registerUser();
+                }
+              }}
+            />
+          </div>
         </div>
 
         <div>
           <button className="button normal fixed-width mt-3 mb-2" onClick={registerUser}>
-            Activate
+            Create acoount
           </button>
         </div>
         <a 
@@ -180,7 +221,7 @@ function Register_window() {
           }}
           style={{ color: "black" }}
         >
-          Already activated your account? <br></br> Log in here!
+          Already have an account? <br></br> Log in here!
         </a>
 
       </div>

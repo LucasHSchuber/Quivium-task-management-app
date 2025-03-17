@@ -26,7 +26,7 @@ function Note() {
     const location = useLocation();
     const navigate = useNavigate();
     const timeoutRef = useRef(null)
-    const { list_id, tasks, listColor, note } = location.state || {};
+    const { list_id, tasks, listColor, note, listName } = location.state || {};
     console.log('text', note.text);
     console.log('tasks', tasks);
     console.log('note_id', note_id);
@@ -138,7 +138,8 @@ function Note() {
             </div> */}
         </div>
 
-        {showNotes && < Notes show={showNotes} list_id={list_id} tasks={tasks} listColor={listColor} />}
+
+        {showNotes && < Notes show={showNotes} list_id={list_id} tasks={tasks} listColor={listColor} listName={listName} />}
     </div>
   );
 }

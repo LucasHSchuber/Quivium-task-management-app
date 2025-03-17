@@ -131,7 +131,7 @@ function Login_window() {
     return (
       <div className="loading-login">
         <div className="spinning-logo-login">
-          <img src={q} alt="fotografportalen" />
+          <img src={q} alt="Quivium" />
           <p>
             <em>Quivium</em>
           </p>
@@ -213,14 +213,16 @@ function Login_window() {
             </button>
           </div>
           <a 
+            href="#"
             className="register-link-login" 
+            role="button"
             onClick={(e) => {
               e.preventDefault();
               navigate("/register_window");
             }}
             style={{ color: "black" }}
           >
-            Activate your account here!
+            Want to create an account? Click here!
         </a>
 
 

@@ -1,6 +1,6 @@
 export const getBaseUrl = () => {
   let platform = window.api.getPlatform();
-  console.log(platform);
+  // console.log(platform);
 
   let url = "";
   if (platform === "darwin") {

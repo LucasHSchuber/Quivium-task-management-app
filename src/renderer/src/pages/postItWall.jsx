@@ -71,6 +71,7 @@ function PostItWall() {
             console.log('delResponse', delResponse);
             if (delResponse.status === 200) {
                 fetchPosts()
+                triggerTaskUpdate(); 
             }
         } catch (error) {
             console.log('error', error);
@@ -96,7 +97,8 @@ function PostItWall() {
                                 </div>
                             ))
                         ) : (
-                            <h6><em>No posts created</em></h6>
+                            // <h6><em>No posts created</em></h6>
+                            null
                         )}
                     </div>
                     <div className="newpostit-note">

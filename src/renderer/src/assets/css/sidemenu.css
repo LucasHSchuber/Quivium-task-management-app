@@ -112,12 +112,15 @@
 }
 
 .newlist-input{
-    width: 10.5em;
+    width: 11.5em;
     height: 1.8em;
     font-size: 0.7em;
     padding: 0.2em;
-    background-color: #efefef;
-    border: 1px solid gray;
+    /* background-color: #efefef; */
+    background-color: inherit;
+    /* border: 1px solid gray; */
+    border: none;
+    border-bottom: 1px solid gray;
     border-radius: 2px;
 }
 .newlist-input:focus{

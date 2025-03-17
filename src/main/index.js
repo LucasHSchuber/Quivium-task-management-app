@@ -204,7 +204,7 @@ function createLoginWindow() {
     // Create the loginWindow
     loginWindow = new BrowserWindow({
       width: 350,
-      height: 460,
+      height: 480,
       resizable: false,
       show: false,
       autoHideMenuBar: true,
@@ -885,9 +885,9 @@ ipcMain.handle("createUser", async (event, args) => {
       throw new Error("Invalid arguments received for createUser");
     }
 
-    const { username, password } = args;
+    const { username, password, firstname, lastname } = args;
 
-    if (!username || !password) {
+    if (!username || !password || !firstname || !lastname) {
       throw new Error("Missing required user data for createUser");
     }
 
@@ -901,10 +901,10 @@ ipcMain.handle("createUser", async (event, args) => {
       // Insert the new user into the database
       await db.run(
         `
-        INSERT INTO users (email, password)
-        VALUES (?, ?)
+        INSERT INTO users (email, password, firstname, lastname)
+        VALUES (?, ?, ?, ?)
         `,
-        [username, hashedPassword],
+        [username, hashedPassword, firstname, lastname],
       );
 
       console.log("User added successfully");
@@ -1950,19 +1950,18 @@ ipcMain.handle("createNewNoteTitle", async (event, args) => {
     if (!args || typeof args !== "object") {
       throw new Error("Invalid arguments received for createNewNoteTitle");
     }
-
     const { user_id, task_id, list_id, title } = args;
-
     if (!user_id || !title) {
       throw new Error("Missing required user data for createNewNoteTitle");
     }
-    // Insert the new user into the database
+    const safeListId = list_id || null;
+    const safeTaskId = task_id || null;
     await db.run(
       `
       INSERT INTO notes (title, user_id, list_id, task_id)
       VALUES (?, ?, ?, ?)
       `,
-      [title, user_id, list_id, task_id],
+      [title, user_id, safeListId, safeTaskId],
     );
     return { success: true, status: 201, message: "New note title created successfully" };
     
@@ -1971,6 +1970,7 @@ ipcMain.handle("createNewNoteTitle", async (event, args) => {
     return { error: err.message };
   }
 });
+
 
 // Get all task notes by list_id
 ipcMain.handle("getAllTaskNotes", async (event, user_id, list_id) => {
@@ -1998,7 +1998,7 @@ ipcMain.handle("getAllTaskNotes", async (event, user_id, list_id) => {
   `;
 
   try {
-    const taskNotes = await new Promise((resolve, reject) => {
+    const data = await new Promise((resolve, reject) => {
       const db = new sqlite3.Database(dbPath);
 
       db.all(query, [user_id, list_id, list_id], (error, rows) => {
@@ -2053,7 +2053,7 @@ ipcMain.handle("getAllTaskNotes", async (event, user_id, list_id) => {
       });
     });
 
-    return { status: 200, taskNotes };
+    return { status: 200, data };
   } catch (error) {
     console.error("Error fetching tasks with notes:", error);
     return { statusCode: 500, errorMessage: error.message || "Internal Server Error" };

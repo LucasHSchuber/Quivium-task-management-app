@@ -107,7 +107,11 @@
   color: rgb(65, 65, 65);
   height: 1.8em;
   font-size: 0.7em;
-  border: 1px solid gray;
+  /* border: 1px solid gray; */
+  border: 1px solid rgb(232, 232, 232);
+  border-bottom: 1px solid gray !important;
+  background-color: #eaeaea;
+  border-radius: 3px;
   cursor: pointer;
   transition: 0.2s;
 }
@@ -393,7 +397,7 @@
   height: 2.4em;
   width: 7em;
   border: none;
-  background-color: #cccccc;
+  background-color: #e0e0e0;
   color: rgb(59, 59, 59);
   border-radius: 3px;
   transition: 0.2s;

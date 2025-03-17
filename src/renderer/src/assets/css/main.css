@@ -180,8 +180,8 @@
 }
 
 .form-input-field-login {
-  width: 70%;
-  height: 2.6em;
+  width: 85%;
+  height: 2.4em;
   padding: 0.4em;
   margin-bottom: 0.4em;
   border-radius: 5px;
@@ -349,7 +349,7 @@
   width: 18.5em;
   height: 21em;
   padding: 1em 1em 0.5em 1em;
-  margin: 0.1em;
+  /* margin: 0.1em; */
   font-size: 0.7em;
   box-shadow: 5px 5px 6px rgb(215, 229, 234);
   border: 1px solid rgb(239, 239, 239);
@@ -369,9 +369,9 @@
 }
 .newpostit-note{
   background-color: #f8f8f8;
-  border: 1px solid rgb(240, 240, 240);
+  border: 1px solid rgb(233, 233, 233);
   width: 18.5em;
-  height: 20em;
+  height: 20.1em;
   padding: 1em;
   margin-top: 0.5em;
   font-size: 0.7em;

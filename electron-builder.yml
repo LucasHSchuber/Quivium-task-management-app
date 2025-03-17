@@ -1,4 +1,4 @@
-appId: COM.ELECTRON.APP
+appId: QUIVIUM.APP
 productName: Quivium
 directories:
   buildResources: build
@@ -18,7 +18,7 @@ win:
       arch:
         - x64
         - ia32
-  icon: resources/logo.ico 
+  icon: resources/q.ico 
   executableName: Quivium
   asarUnpack: ["**/*.node"]
 nsis:
@@ -27,7 +27,7 @@ nsis:
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
 mac:
-  icon: resources/logo.png 
+  icon: resources/q.ico 
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:
     - NSCameraUsageDescription: Application requests access to the device's camera.
@@ -38,7 +38,7 @@ mac:
 dmg:
   artifactName: ${name}-${version}.${ext}
 linux:
-  icon: resources/logo.png 
+  icon: resources/q.ico 
   target:
     - AppImage
     - snap
@@ -49,8 +49,8 @@ appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: false
 publish:
-  # provider: github
-  # owner: LucasHSchuber
-  # repo: fotografportalen_winmac
-  # releaseType: release
-  # token: token
+  provider: github
+  owner: LucasHSchuber
+  repo: Quivium-task-management-app
+  releaseType: release
+  token: token

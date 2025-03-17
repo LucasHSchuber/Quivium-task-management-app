@@ -118,6 +118,7 @@ function List() {
 
     // Show new list input
     const handleShowAddTaskInput = () => {
+        setTaskId("")
         setShowTaskManager(false);
         setShowTaskDetails(false)
         setShowNotes(false)
@@ -146,6 +147,7 @@ function List() {
     }
     // Show new list input
     const handleShowNotes = () => {
+        setTaskId("")
         setShowTaskManager(false);
         setShowTaskDetails(false)
         setShowNewTask(false);
@@ -280,7 +282,7 @@ function List() {
                 </div>
             </div>
             {/* DUE TASKS */}
-            <div className="mt-5">
+            <div className="mt-4">
                 <div className="d-flex">
                     <h5 style={{ fontSize: "1em" }}><b>Due Tasks</b></h5>
                     <h6 className="ml-2 duetasksamount">{tasks.filter(task => task.due_date !== "" && task.due_date < new Date().toISOString().split('T')[0]).length}</h6>
@@ -333,7 +335,7 @@ function List() {
         {showNewTask && < AddNewTask list_id={list_id} onSuccess={onSuccessNewTask}/>}
         {showTaskManager && < TaskManager show={showTaskManager} list_id={list_id} taskId={taskId} due_date={due_date} onSuccess={onSuccessNewTask} onSuccessDelete={onSuccessDelete}/>}
         {showTaskDetails && < TaskDetails show={showTaskDetails} detailsTask={detailsTask} listColor={listColor} listName={listName} onSuccess={onSuccessNewTask}/>}
-        {showNotes && < Notes show={showNotes} list_id={list_id} tasks={tasks} listColor={listColor} />}
+        {showNotes && < Notes show={showNotes} list_id={list_id} tasks={tasks} listColor={listColor} listName={listName} />}
 
     </div>
   );

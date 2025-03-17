@@ -18,10 +18,10 @@ async function main() {
 
   const config = {
     owner: 'LucasHSchuber',
-    repo: 'fotografportalen_winmac',
+    repo: 'Quivium-task-management-app',
     provider: 'github',
     releaseType: 'release',
-    updateCacheDirName: 'photographerportal-update',
+    updateCacheDirName: 'quivium-update',
     version: version
   };
 

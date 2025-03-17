@@ -73,7 +73,7 @@ function UpdateApplication_window() {
     <div className="updateapplication_window-wrapper">
        <div className="updateapplicationspinning-logo-login">
 
-          <img src={q} alt="fotografportalen" />
+          <img src={q} alt="Quivium" />
 
           <p className="mt-3 px-1"><em>{!errorMessage ? message : ""}</em></p>
           <p className="px-2" style={{ fontSize: "0.6em" }}>{errorMessage ? errorMessage : ""}</p>

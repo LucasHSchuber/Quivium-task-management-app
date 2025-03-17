@@ -115,7 +115,7 @@ function Today() {
                             </div>
                         ))
                 ) : (
-                    <h6 style={{ fontSize: "0.9em" }}><em>You have no tasks that is due today</em></h6>
+                    <h6 style={{ fontSize: "0.8em" }}><em>You have no tasks due today</em></h6>
                 )}
                 <div>
                     <button onClick={handleShowAddTaskInput} className="addlist-button">{showNewTask ? "- Add New Task" : "+ Add New Task"}</button>
