@@ -70,7 +70,7 @@ function Archive() {
                         </div>
                         ))
                     ) : (
-                        <h6>No archived lists</h6>
+                        <h6 style={{ fontSize: "0.85em" }}><em>No archived lists</em></h6>
                     )}
                 </div>
             </div>

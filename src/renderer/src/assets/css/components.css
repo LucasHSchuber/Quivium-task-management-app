@@ -237,6 +237,35 @@
 
 
 
+/* CONTACT MODAL */
+.form-input-field-contact-modal {
+  height: 2.3em;
+  padding: 0.3em;
+  font-size: 0.75em;
+  border-radius: 3px;
+  /* border: 1px solid #afafaf; */
+  outline: none;
+}
+.form-input-field-contact-modal::placeholder {
+  color: #a8a8a8;
+  font-size: 0.9em;
+}
+
+.textarea-contact-modal{
+  padding: 0.3em;
+  font-size: 0.75em;
+  border-radius: 3px;
+  /* border: 1px solid rgb(175, 175, 175); */
+  outline: none;
+}
+.textarea-contact-modal::placeholder {
+  color: rgb(168, 168, 168);
+  font-size: 0.9em;
+}
+
+
+
+
 
 /* SWEET ALERT STYLING */
 .my-custom-title {

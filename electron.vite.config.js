@@ -22,6 +22,10 @@ export default defineConfig({
     },
     publicDir: 'src/assets',
     plugins: [react()],
+    server: {
+      port: 5050, 
+      strictPort: true
+    }
     // server: {
     //   proxy: {
     //     '/index.php': {

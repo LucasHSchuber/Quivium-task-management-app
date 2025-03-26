@@ -6,7 +6,7 @@ import convertToLocalTime from "../assets/js/convertToLocalTime"
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {  } from "@fortawesome/free-regular-svg-icons";
-import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faTrash, faBorderAll } from "@fortawesome/free-solid-svg-icons";
 
 
 function PostItWall() {
@@ -82,7 +82,10 @@ function PostItWall() {
     return (
         <div className="postitwall-wrapper">
             <div className="postitwall-box">
-                <h1 className="mb-5">Post it wall</h1>
+                <div className="mb-5 d-flex listinfo">
+                    <FontAwesomeIcon className="mr-3 header-icon" style={{ marginTop: "0.1em" }} icon={faBorderAll} />
+                    <h1>Post it wall</h1>
+                </div>
                     <div className="posts-container">
 
                         {posts.length > 0 ? (

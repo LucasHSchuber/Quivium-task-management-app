@@ -87,6 +87,7 @@
 }
 
 .addtask-button2{
+  width: 1em;
   color: rgb(65, 65, 65);
   background-color: inherit;
   border: 1px solid rgb(166, 166, 166);
@@ -101,6 +102,12 @@
 }
 .addtask-button2:focus{
   outline: none;
+}
+.addtask-button2-active{
+  background-color: #67F3B2;
+}
+.addtask-button2-active:hover{
+  background-color: #b1ffdb;
 }
 
 .createlist-button{
@@ -387,8 +394,15 @@
   cursor: pointer;
 }
 .savemodal-button:hover{
-  /* border: 1px solid rgb(124, 124, 124); */
   background-color: rgb(0, 253, 164);
+}
+.savemodal-button:focus{
+  outline: none;
+}
+.savemodal-button-loading{
+  background-color: #4f4f4f !important;
+  color:#aaaaaa;
+  cursor: progress;
 }
 .closemodal-button{
   font-size: 0.8em;
@@ -406,4 +420,7 @@
 .closemodal-button:hover{
   /* border: 1px solid rgb(124, 124, 124); */
   background-color: rgb(197, 197, 197);
+}
+.closemodal-button:focus{
+  outline: none;
 }

@@ -7,7 +7,8 @@ import { useNavigate } from "react-router-dom";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {  } from "@fortawesome/free-regular-svg-icons";
-import { faArrowRight, faPenToSquare, faPlus, faNoteSticky, faSquareCheck, faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
+import { faArrowRight, faPenToSquare, faPlus, faNoteSticky, faSquareCheck, faChevronDown, faChevronUp, faEyeSlash, faEye } from "@fortawesome/free-solid-svg-icons";
+import { RiUnpinFill, RiPushpinFill } from "react-icons/ri";
 
 import AddNewTask from "../components/addNewTask";
 import TaskManager from "../components/taskManager";
@@ -29,6 +30,7 @@ function List() {
     const [detailsTask, setDetailsTask] = useState({});
     const [showDueTasks, setShowDueTasks] = useState(false);
     const [showNotes, setShowNotes] = useState(false);
+    const [hideCompletedTasks, setHideCompletedTasks] = useState(true);
 
     const [showTaskManager, setShowTaskManager] = useState(false);
     const [showTaskDetails, setShowTaskDetails] = useState(false);
@@ -44,11 +46,12 @@ function List() {
     const onSuccessDelete = () => {fetchAllTasks(); setShowTaskManager(false); triggerTaskUpdate() }
 
 
-    // Clear taskmManager component on mount
+    // Clear taskmManager component on mount and changing list view
     useEffect(() => {
         setShowTaskManager(false)
         setShowDueTasks(false)
         setShowTaskDetails(false)
+        setTaskId("")
     }, [list_id]);
 
 
@@ -132,7 +135,7 @@ function List() {
         setShowNotes(false)
         setDue_date(due_date)
         setTaskId(task_id)
-        setShowTaskManager(true);
+        setShowTaskManager(!showTaskManager);
     }
 
      // Open taskManger component
@@ -145,13 +148,13 @@ function List() {
         setShowNotes(false)
         setShowTaskDetails(true);        
     }
-    // Show new list input
+    // Open notes component
     const handleShowNotes = () => {
         setTaskId("")
         setShowTaskManager(false);
         setShowTaskDetails(false)
         setShowNewTask(false);
-        setShowNotes(true)
+        setShowNotes(!showNotes)
     }
 
 
@@ -171,31 +174,115 @@ function List() {
         }
     }
 
+    // set task to sticky
+    const handleSetSticky = async (task_id) => {
+        const user_id = localStorage.getItem("user_id");
+        try {
+            const stickyResponse = await window.api.setTaskSticky(task_id, list_id, user_id)
+            console.log('stickyResponse', stickyResponse);
+            if (stickyResponse.status === 200){
+                fetchAllTasks()
+            }
+        } catch (error) {
+            console.log('error', error);
+        }
+    };
+
+    const handleUnsetSticky = async (task_id) => {
+        const user_id = localStorage.getItem("user_id");
+        try {
+            const unstickyResponse = await window.api.unsetTaskSticky(task_id, list_id, user_id)
+            console.log('unstickyResponse', unstickyResponse);
+            if (unstickyResponse.status === 200){
+                fetchAllTasks()
+            }
+        } catch (error) {
+            console.log('error', error);
+        }
+    };
+
 
   return (
     <div className="page-wrapper">
         <div className="page-box">
             {list && (
                 <div className="d-flex listinfo">
-                    <h1 className="mr-4"> {list.name}</h1>
-                    <div className="mr-4 list-color" style={{ backgroundColor: list.color, color: getTextColor(list.color)}}>{tasks.length}</div>
+                    <h1 className="mr-3"> {list.name}</h1>
+                    <div className="mr-3 list-color" style={{ backgroundColor: list.color, color: getTextColor(list.color)}}>{tasks.length}</div>
                     {/* <p>Created: {list.created}</p> */}
                     <TaskProgress tasks={tasks} listId={list_id} listName={listName} onSuccess={onSuccessArchivedList} />
                 </div>
             )}
             <div className="d-flex">
-                <FontAwesomeIcon title="Add new task" onClick={handleShowAddTaskInput} className="addtask-button2" icon={faPlus} size="xs" />
-                <FontAwesomeIcon title="View notes" onClick={() => handleShowNotes(list_id)} className="mx-2 addtask-button2" icon={faNoteSticky} size="xs" />
-                <FontAwesomeIcon title="Archive list" onClick={() => handleArchiveList(list_id)} className="addtask-button2" icon={faSquareCheck} size="xs" />
+                <div>
+                    <FontAwesomeIcon title="Add new task" onClick={handleShowAddTaskInput} className={`addtask-button2 ${showNewTask ? "addtask-button2-active" : ""}`} icon={faPlus} size="xs" />
+                    <FontAwesomeIcon title={`${hideCompletedTasks ? "Show completed tasks" : "Hide completed tasks"}`} onClick={() => setHideCompletedTasks(!hideCompletedTasks)} className={`mx-2 addtask-button2 ${hideCompletedTasks ? "addtask-button2-active" : ""}`} icon={hideCompletedTasks ? faEyeSlash : faEye} size="xs" />
+                    <FontAwesomeIcon title="View notes" onClick={() => handleShowNotes(list_id)} className={`addtask-button2 ${showNotes ? "addtask-button2-active" : ""}`} icon={faNoteSticky} size="xs" /> 
+                </div>
+                {/* <div style={{ marginLeft: "10%"}}>
+                    <FontAwesomeIcon title="Archive list" onClick={() => handleArchiveList(list_id)} className="addtask-button2" icon={faSquareCheck} size="xs" />
+                </div> */}
             </div>
+
+            {/* STICKY TASKS */}
+            {tasks.some(t => t.sticky === 1) && (
+            <>
+                <h5 className="mt-5 " style={{ fontSize: "1em", color: "#50f0a7" }}><b>Sticky tasks</b></h5>
+                <div className="stickytaskbox">
+                {tasks.length > 0 && (
+                        tasks
+                            .filter(task => {
+                                return task.sticky === 1;
+                            })
+                            .map(task => (
+                                <div 
+                                    key={task.task_id} 
+                                    className={`d-flex justify-content-between task-box-sticky ${taskId === task.task_id && task.is_completed ? "task-box-sticky-active-done" : task.is_completed ? "task-box-sticky-done" : taskId === task.task_id ? "task-box-sticky-active" : ""}`} 
+                                    style={{ borderLeft: `8px solid ${listColor}` }} 
+                                    onClick={() => handleShowTaskDetails(task)}
+                                >
+                                    <div className="d-flex">
+                                        <input 
+                                            type="checkbox" 
+                                            id={`task-checkbox-${task.task_id}`} 
+                                            className="checkbox" 
+                                            defaultChecked={task.is_completed}
+                                            onClick={(e) => e.stopPropagation()} 
+                                            onChange={(e) => handleUpdateIsCompleted(task.is_completed, task.task_id)}
+                                        />
+                                        <h6>{task.title}</h6>
+                                    </div>
+                                    <div className="d-flex" >
+                                        <h6 className="subtaskamount">{task.subtasks.length}</h6>
+                                        {/* <FontAwesomeIcon className="arrowright-task-box mr-1" icon={faArrowRight} size="xs"/> */}
+                                        <FontAwesomeIcon className="mb-1 edittask-icon" icon={faPenToSquare} size="xs" 
+                                            onClick={(e) => { 
+                                                e.stopPropagation();
+                                                handleShowTaskManager(task.task_id, task.due_date); 
+                                            }} 
+                                        />
+                                        <RiUnpinFill title="Remove from sticky tasks" className="stickytask-icon"
+                                            onClick={(e) => { 
+                                                e.stopPropagation(); 
+                                                handleUnsetSticky(task.task_id); 
+                                            }} 
+                                        />
+                                    </div>
+                                </div>
+                            ))
+                    )}
+                </div>
+            </>
+            )}
+
             {/* TODAYS TASKS */}
-            <div className="mt-5">
+            <div className="mt-3">
                 <h5 style={{ fontSize: "1em" }}><b>Today</b></h5>
                 {tasks.length > 0 ? (
                     tasks
                         .filter(task => {
                             const today = new Date().toISOString().split('T')[0];
-                            return task.due_date === today;
+                            return task.sticky === 0 && task.due_date === today && (hideCompletedTasks ? task.is_completed === 0 : true);
                         })
                         .map(task => (
                             <div 
@@ -224,6 +311,12 @@ function List() {
                                             handleShowTaskManager(task.task_id, task.due_date); 
                                         }} 
                                     />
+                                    <RiPushpinFill title="Add to sticky tasks" className="stickytask-icon"
+                                        onClick={(e) => { 
+                                            e.stopPropagation(); 
+                                            handleSetSticky(task.task_id); 
+                                        }} 
+                                    />
                                 </div>
                             </div>
                         ))
@@ -242,7 +335,7 @@ function List() {
                     tasks
                         .filter(task => {
                             const today = new Date().toISOString().split('T')[0];
-                            return task.due_date > today || task.due_date === "";
+                            return task.sticky === 0 && (task.due_date > today || task.due_date === "") && (hideCompletedTasks ? task.is_completed === 0 : true);
                         })
                         .map(task => (
                             <div key={task.task_id} 
@@ -264,10 +357,16 @@ function List() {
                                 <div className="d-flex">
                                     <h6 className="subtaskamount">{task.subtasks.length}</h6>
                                     {/* <FontAwesomeIcon className="mr-1 mb-1" icon={faArrowRight} size="xs"/> */}
-                                    <FontAwesomeIcon className="mb-1 edittask-icon" icon={faPenToSquare} size="xs" 
+                                    <FontAwesomeIcon className="edittask-icon" icon={faPenToSquare} size="xs" 
                                         onClick={(e) => { 
                                             e.stopPropagation(); 
                                             handleShowTaskManager(task.task_id, task.due_date); 
+                                        }} 
+                                    />
+                                    <RiPushpinFill title="Add to sticky tasks" className="stickytask-icon"
+                                        onClick={(e) => { 
+                                            e.stopPropagation(); 
+                                            handleSetSticky(task.task_id); 
                                         }} 
                                     />
                                 </div>
@@ -293,7 +392,7 @@ function List() {
 
                 {showDueTasks && (() => {
                     const today = new Date().toISOString().split('T')[0];
-                    const dueTasks = tasks.filter(task => task.due_date !== "" && task.due_date < today);
+                    const dueTasks = tasks.filter(task => (task.due_date !== "" && task.due_date < today) && (hideCompletedTasks ? task.is_completed === 0 : true));
 
                     return dueTasks.length > 0 ? (
                         dueTasks.map(task => (

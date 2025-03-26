@@ -4,15 +4,15 @@ const log = require("electron-log");
 const path = require("path");
 const { spawn } = require('child_process');
 const fs = require("fs");
-const fsa = require("fs/promises");
-const util = require("util");
+// const fsa = require("fs/promises");
+// const util = require("util");
 const sqlite3 = require("sqlite3").verbose();
-const fse = require("fs-extra");
-const axios = require('axios');
+// const fse = require("fs-extra");
+// const axios = require('axios');
 const ipcMain = electron.ipcMain;
 const app = electron.app;
-const shell = electron.shell;
-const dialog = electron.dialog;
+// const shell = electron.shell;
+// const dialog = electron.dialog;
 const os = require("os");
 const BrowserWindow = electron.BrowserWindow;
 const isDev = require("electron-is-dev");
@@ -20,10 +20,12 @@ const { autoUpdater, AppUpdater } = require("electron-updater");
 const { exec } = require("child_process");
 const https = require("https");
 const url = require("url");
-const ftp = require("basic-ftp");
+// const ftp = require("basic-ftp");
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
-const tus = require("tus-js-client");
+// const tus = require("tus-js-client");
+const nodemailer = require("nodemailer");
+import _env from "../renderer/src/assets/js/env"
 
 import express from "express";
 
@@ -80,7 +82,7 @@ function createUpdateWindow(callback) {
 
 
   if (is.dev && process.env["ELECTRON_RENDERER_URL"]) {
-    updateApplicationWindow.loadURL("http://localhost:5173/#/updateapplication_window");
+    updateApplicationWindow.loadURL("http://localhost:5050/#/updateapplication_window");
   } else {
     updateApplicationWindow.loadURL(
       `file://${path.join(__dirname, "../renderer/index.html")}#/updateapplication_window`,
@@ -111,8 +113,6 @@ autoUpdater.autoDownload = false;
 autoUpdater.logger = log;
 autoUpdater.logger.transports.file.level = "info";
 
-import _env from "../renderer/src/assets/js/env"
-console.log("_env", _env);
 if (_env.production){
  // UPDATE SETFEEDURL WHEN IN PRODUCTION 
   autoUpdater.setFeedURL({
@@ -133,7 +133,7 @@ app.on("ready", async () => {
     if (!is.dev) {
       const exApp = express();
       exApp.use(express.static(path.join(__dirname, "../renderer/")));
-      exApp.listen(5173);
+      exApp.listen(5050);
     }
 
     log.info("Ready!!");
@@ -225,7 +225,7 @@ function createLoginWindow() {
     }
   
     if (is.dev && process.env["ELECTRON_RENDERER_URL"]) {
-      loginWindow.loadURL("http://localhost:5173/#/login_window");
+      loginWindow.loadURL("http://localhost:5050/#/login_window");
     } else {
       loginWindow.loadURL(
         `file://${path.join(__dirname, "../renderer/index.html")}#/login_window`,
@@ -272,7 +272,7 @@ ipcMain.handle("createMainWindow", async (event, args) => {
     const mainWindow = new BrowserWindow({
       width: 1150,
       height: 750,
-      minWidth: 820,
+      minWidth: 900,
       minHeight: 550,
       show: false,
       autoHideMenuBar: true,
@@ -294,7 +294,7 @@ ipcMain.handle("createMainWindow", async (event, args) => {
     }
 
     if (is.dev && process.env["ELECTRON_RENDERER_URL"]) {
-      mainWindow.loadURL("http://localhost:5173/");
+      mainWindow.loadURL("http://localhost:5050/");
     } else {
       mainWindow.loadURL(
         `file://${path.join(__dirname, "../renderer/index.html")}`,
@@ -775,7 +775,41 @@ function createTables() {
 
 
 
+// SEND EMAIL - NODEMAILER
 
+ipcMain.handle("sendMessage", async (event, email, message) => {
+    console.log("sendMessage triggered...");
+    log.info("email", email)
+    if (!email || !message) {throw new Error("Missing data for sendMessage")}
+    
+    try {
+      const transporter = nodemailer.createTransport({
+          service: "gmail",
+          auth: {
+              user: _env.GMAIL_USER,
+              pass: _env.GMAIL_PASS,
+          },
+          logger: true,
+          debug: true,
+      });
+
+      const mailOptions = {
+        from: `Quivium Contact`, 
+        replyTo: email, 
+        to: _env.GMAIL_USER,
+        subject: "Quivium",
+        text: `From: ${email}\n\n${message}`,
+      };
+
+      const info = await transporter.sendMail(mailOptions);
+      console.log(`Success!`);
+
+      return { success: true, status: 200, message: "Email sent successfully!" };
+  } catch (error) {
+      console.error("Error sending email:", error);
+      return { success: false, error: "Failed to send email." };
+  }
+})
 
 
 
@@ -1474,7 +1508,7 @@ ipcMain.handle("getAllTasks", async (event, user_id, list_id) => {
   const query = `
     SELECT 
       t.task_id, t.title, t.description, t.due_date, 
-      t.updated, t.is_completed, t.list_id,
+      t.updated, t.is_completed, t.sticky, t.list_id,
       st.subtask_id, st.title AS subtask_title, st.description AS subtask_description, 
       st.due_date AS subtask_due_date, st.is_completed AS subtask_completed, st.created AS subtask_created
     FROM tasks t
@@ -1500,6 +1534,7 @@ ipcMain.handle("getAllTasks", async (event, user_id, list_id) => {
               description: row.description,
               due_date: row.due_date,
               updated: row.updated,
+              sticky: row.sticky,
               is_completed: row.is_completed,
               subtasks: [] 
             });
@@ -1529,42 +1564,6 @@ ipcMain.handle("getAllTasks", async (event, user_id, list_id) => {
   }
 });
 
-// //get all lists by user_id
-// ipcMain.handle("getAllTasks", async (event, user_id, list_id) => {
-//   const query = "SELECT * FROM tasks WHERE user_id = ? AND list_id = ? AND is_deleted = 0";
-//   try {
-//     const tasks = await new Promise((resolve, reject) => {
-//       const db = new sqlite3.Database(dbPath);
-
-//       db.all(query, [user_id, list_id], (error, rows) => {
-//         if (error != null) {
-//           db.close();
-//           reject({ statusCode: 400, errorMessage: error });
-//         }
-
-//         const tasks = rows.map((row) => ({
-//           task_id: row.task_id,
-//           title: row.title,
-//           description: row.description,
-//           due_date: row.due_date,
-//           updated: row.updated,
-//           is_deleted: row.is_deleted,
-//           is_completed: row.is_completed,
-//           created: row.created,
-//           user_id: row.user_id,
-//           list_id: row.list_id,
-//         }));
-
-//         resolve({ status: 200, tasks: tasks });
-//       });
-//     });
-//     return tasks;
-//     // return { statusCode: 200, lists: lists }; 
-//   } catch (error) {
-//     console.error("Error fetching tasks:", error);
-//     return { statusCode: 500, errorMessage: error.message || "Internal Server Error" };
-//   }
-// });
 
 
 // Get task by task id
@@ -1608,8 +1607,6 @@ ipcMain.handle('updateTaskCompletion', async (event, _check, task_id, user_id) =
                 }
             });
         });
-
-        // Return a success message to the renderer process
         return { status: 200, task_id: task_id, message: 'Task updated successfully' };
     } catch (error) {
         console.error('Error in updateTaskCompletion:', error);
@@ -1618,18 +1615,27 @@ ipcMain.handle('updateTaskCompletion', async (event, _check, task_id, user_id) =
 });
 
 
-//get all lists by user_id
+// Get all tasks due today with their subtasks
 ipcMain.handle("getTasksDueToday", async (event, user_id) => {
   const query = `
-    SELECT * 
-    FROM lists 
-    LEFT JOIN tasks 
-    ON lists.list_id = tasks.list_id 
-    WHERE lists.user_id = ? 
-    AND lists.archived = 0
-    AND lists.is_deleted = 0 
-    AND tasks.is_deleted = 0
-    AND tasks.due_date = date('now')
+    SELECT 
+      l.list_id, l.name AS list_name, l.color AS list_color, 
+      t.task_id, t.title AS task_title, t.description AS task_description, 
+      t.due_date AS task_due_date, t.updated AS task_updated, 
+      t.is_deleted AS task_is_deleted, t.is_completed AS task_is_completed, 
+      t.created AS task_created, t.user_id AS task_user_id,
+      st.subtask_id, st.title AS subtask_title, st.description AS subtask_description, 
+      st.due_date AS subtask_due_date, st.is_completed AS subtask_completed, 
+      st.created AS subtask_created
+    FROM lists l
+    LEFT JOIN tasks t ON l.list_id = t.list_id 
+    LEFT JOIN subtasks st ON t.task_id = st.task_id 
+    WHERE l.user_id = ? 
+      AND l.archived = 0
+      AND l.is_deleted = 0 
+      AND t.is_deleted = 0
+      AND t.due_date = date('now')
+      ORDER BY t.is_completed ASC, t.due_date ASC;
   `;
 
   try {
@@ -1637,36 +1643,138 @@ ipcMain.handle("getTasksDueToday", async (event, user_id) => {
       const db = new sqlite3.Database(dbPath);
 
       db.all(query, [user_id], (error, rows) => {
-        if (error != null) {
+        if (error) {
           db.close();
-          reject({ statusCode: 400, errorMessage: error });
+          return reject({ statusCode: 400, errorMessage: error.message });
         }
 
-        const tasks = rows.map((row) => ({
-          list_id: row.list_id,
-          task_id: row.task_id,
-          list_name: row.name,
-          list_color: row.color,
-          task_title: row.title,
-          task_title: row.title,
-          task_description: row.description,
-          task_due_date: row.due_date,
-          task_updated: row.updated,
-          task_is_deleted: row.is_deleted,
-          task_is_completed: row.is_completed,
-          task_created: row.created,
-          task_user_id: row.user_id,
-        }));
+        const taskMap = new Map();
 
-        resolve({ status: 200, tasks: tasks });
+        rows.forEach((row) => {
+          // If task is not in map, add it
+          if (!taskMap.has(row.task_id)) {
+            taskMap.set(row.task_id, {
+              list_id: row.list_id,
+              list_name: row.list_name,
+              list_color: row.list_color,
+              task_id: row.task_id,
+              task_title: row.task_title,
+              task_description: row.task_description,
+              task_due_date: row.task_due_date,
+              task_updated: row.task_updated,
+              task_is_deleted: row.task_is_deleted,
+              task_is_completed: row.task_is_completed,
+              task_created: row.task_created,
+              task_user_id: row.task_user_id,
+              subtasks: [],
+            });
+          }
+
+          // Add subtask if it exists
+          if (row.subtask_id) {
+            taskMap.get(row.task_id).subtasks.push({
+              subtask_id: row.subtask_id,
+              subtask_title: row.subtask_title,
+              subtask_description: row.subtask_description,
+              subtask_due_date: row.subtask_due_date,
+              subtask_completed: row.subtask_completed,
+              subtask_created: row.subtask_created,
+            });
+          }
+        });
+
+        resolve({ status: 200, tasks: Array.from(taskMap.values()) });
       });
     });
+
     return tasks;
   } catch (error) {
     console.error("Error fetching tasks:", error);
     return { statusCode: 500, errorMessage: error.message || "Internal Server Error" };
   }
 });
+
+
+
+// Get all upcoming tasks with their subtasks
+ipcMain.handle("getUpcomingTasks", async (event, user_id) => {
+  const query = `
+    SELECT 
+      l.list_id, l.name AS list_name, l.color AS list_color, 
+      t.task_id, t.title AS task_title, t.description AS task_description, 
+      t.due_date AS task_due_date, t.updated AS task_updated, 
+      t.is_deleted AS task_is_deleted, t.is_completed AS task_is_completed, 
+      t.created AS task_created, t.user_id AS task_user_id,
+      st.subtask_id, st.title AS subtask_title, st.description AS subtask_description, 
+      st.due_date AS subtask_due_date, st.is_completed AS subtask_completed, 
+      st.created AS subtask_created
+    FROM lists l
+    LEFT JOIN tasks t ON l.list_id = t.list_id 
+    LEFT JOIN subtasks st ON t.task_id = st.task_id 
+    WHERE l.user_id = ? 
+      AND l.archived = 0
+      AND l.is_deleted = 0 
+      AND t.is_deleted = 0
+      AND (t.due_date != date('now') OR t.due_date IS NULL)
+    ORDER BY t.is_completed ASC, t.due_date ASC;
+  `;
+
+  try {
+    const tasks = await new Promise((resolve, reject) => {
+      const db = new sqlite3.Database(dbPath);
+
+      db.all(query, [user_id], (error, rows) => {
+        if (error) {
+          db.close();
+          return reject({ statusCode: 400, errorMessage: error.message });
+        }
+
+        const taskMap = new Map();
+
+        rows.forEach((row) => {
+          // If task is not in map, add it
+          if (!taskMap.has(row.task_id)) {
+            taskMap.set(row.task_id, {
+              list_id: row.list_id,
+              list_name: row.list_name,
+              list_color: row.list_color,
+              task_id: row.task_id,
+              task_title: row.task_title,
+              task_description: row.task_description,
+              task_due_date: row.task_due_date,
+              task_updated: row.task_updated,
+              task_is_deleted: row.task_is_deleted,
+              task_is_completed: row.task_is_completed,
+              task_created: row.task_created,
+              task_user_id: row.task_user_id,
+              subtasks: [],
+            });
+          }
+
+          // Add subtask if it exists
+          if (row.subtask_id) {
+            taskMap.get(row.task_id).subtasks.push({
+              subtask_id: row.subtask_id,
+              subtask_title: row.subtask_title,
+              subtask_description: row.subtask_description,
+              subtask_due_date: row.subtask_due_date,
+              subtask_completed: row.subtask_completed,
+              subtask_created: row.subtask_created,
+            });
+          }
+        });
+
+        resolve({ status: 200, tasks: Array.from(taskMap.values()) });
+      });
+    });
+
+    return tasks;
+  } catch (error) {
+    console.error("Error fetching tasks:", error);
+    return { statusCode: 500, errorMessage: error.message || "Internal Server Error" };
+  }
+});
+
 
 
 
@@ -1749,6 +1857,53 @@ ipcMain.handle('deleteTask', async (event, task_id, user_id) => {
   }
 });
 
+// set task to sticky = 1
+ipcMain.handle('setTaskSticky', async (event, task_id, list_id, user_id) => {
+  if ( !list_id || !user_id || !task_id) {
+      throw new Error("Missing required user data for setTaskSticky");
+  }
+  const query = 'UPDATE tasks SET sticky = 1 WHERE list_id = ? AND task_id = ? AND user_id = ?';
+  try {
+      const result = await new Promise((resolve, reject) => {
+          db.run(query, [list_id, task_id, user_id], (error, results) => {
+              if (error) {
+                  console.error('Error updating task:', error);
+                  reject(error);
+              } else {
+                  resolve(results);
+              }
+          });
+      });
+      return { status: 200, task_id: task_id, message: 'Task set to sticky successfully' };
+  } catch (error) {
+      console.error('Error in setTaskSticky:', error);
+      return { status: 500, message: 'Failed to set task to sticky' };
+  }
+});
+
+// unset task to sticky = 0
+ipcMain.handle('unsetTaskSticky', async (event, task_id, list_id, user_id) => {
+  if ( !list_id || !user_id || !task_id) {
+      throw new Error("Missing required user data for unsetTaskSticky");
+  }
+  const query = 'UPDATE tasks SET sticky = 0 WHERE list_id = ? AND task_id = ? AND user_id = ?';
+  try {
+      const result = await new Promise((resolve, reject) => {
+          db.run(query, [list_id, task_id, user_id], (error, results) => {
+              if (error) {
+                  console.error('Error updating task:', error);
+                  reject(error);
+              } else {
+                  resolve(results);
+              }
+          });
+      });
+      return { status: 200, task_id: task_id, message: 'Task set to unsticky successfully' };
+  } catch (error) {
+      console.error('Error in unsetTaskSticky:', error);
+      return { status: 500, message: 'Failed to unset task to sticky' };
+  }
+});
 
 
 

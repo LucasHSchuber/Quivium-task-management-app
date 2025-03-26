@@ -2,15 +2,17 @@ import React, { useEffect, useState, useRef } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { useNavigate } from "react-router-dom";  
 import { useTaskContext } from "../context/taskContext";
+import { toast } from "react-toastify";
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faWifi, faCalendarCheck, faBorderAll, faEllipsisVertical, faSquareCheck, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faWifi, faCalendarCheck, faBorderAll, faEllipsisVertical, faSquareCheck, faPlus, faGear, faComment } from '@fortawesome/free-solid-svg-icons';
 import { faCircleUp } from '@fortawesome/free-regular-svg-icons';
 import ListMenu from "./listMenu";
+import ContactModal from "./contactModal";
 
-import fp from "../assets/images/diaphragm.png";
-import { width } from "@fortawesome/free-regular-svg-icons/faAddressBook";
 import EditListModal from "../components/editListModal";
+
+import logo from "../assets/images/q.png";
 
 function Sidemenu() {
     //define states
@@ -35,16 +37,23 @@ function Sidemenu() {
     const [showEditList, setShowEditList] = useState(false);
 
     const [showNewSubList, setShowNewSubList] = useState(false);
+    const [showContactModal, setShowContactModal] = useState(false);
 
     const navigate = useNavigate(); 
 
     const onSuccessListmenu = () => {fetchAllLists(); navigate("/archive"); fetchArchivedLists();}
     const openEditListModal = () => {setShowEditList(true)}
     const onCloseEditList = () => {setShowEditList(false)}
+    const onCloseContactModal = () => {setShowContactModal(false)}
+
     const onSuccessEditList = () => {
         console.log('Onsuccess edit list');
         setShowEditList(false);
         triggerTaskUpdate();
+    }
+    const onSuccessContact = () => {
+        console.log('Onsuccess contact modal');
+        toast.success("Thank you for your message!");
     }
     
     
@@ -211,11 +220,16 @@ function Sidemenu() {
             
             {/* Content */}
             <div className="sidemenu-box">
-                <h6 className="mt-4">Menu</h6>
+                <div className="mt-3 d-flex justify-content-between">
+                    <div className="d-flex">
+                        <img src={logo} className="sidemenu-logo-img" alt="Quivium logo"></img>
+                        <h6 className="mt-2 ml-2">Menu</h6>
+                    </div>
+                    <FontAwesomeIcon title="Settings" style={{ marginRight: "1em", marginTop: "0.6em" }} className="settings-icon" icon={faGear}/>
+                </div>
                 <div className="mt-5 mb-4 sidemenu-menu">
                     {/* TASKS */}
                     <h6>TASKS</h6>
-                          
                             <div title="Today" className={`mb-1 link-box ${activeTab === "today" ? "link-box-active" : "" }`}>
                                 <NavLink onClick={() => setActiveTab("today")} to="/" exact="true" className="navlink">
                                     <div className="d-flex justify-content-between">
@@ -331,9 +345,14 @@ function Sidemenu() {
                         </div>
                 </div>
                 
-
+                <div className="d-flex message-box" onClick={() => setShowContactModal(!showContactModal)} title="Message us">
+                    <FontAwesomeIcon className="message-icon" icon={faComment} />
+                    <h6 className="ml-2" style={{ fontSize: "0.7em", marginTop:"0.1em", color: "#505050" }}>Contact us</h6>
+                </div>
             </div>
 
+
+            < ContactModal showContactModal={showContactModal} onClose={onCloseContactModal} onSuccess={onSuccessContact} />
             {showEditList && <EditListModal showEditList={showEditList} selectedListId={selectedListId} onCloseEditList={onCloseEditList} onSuccess={onSuccessEditList} />}
 
         </div>

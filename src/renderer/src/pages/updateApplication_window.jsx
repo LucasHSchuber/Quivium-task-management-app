@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 // import axios from "axios";
 // import { useNavigate } from "react-router-dom";
-import fp from "../assets/images/logo_white.png";
 import q from "../assets/images/q.png"
 
 
@@ -18,7 +17,9 @@ function UpdateApplication_window() {
     const handleUpdateNotAvailable = (event, data) => {
         console.log("Message from main process (update-not-available):", data.message);
         setMessage(data.message);
-        window.api.createLoginWindow();
+        setTimeout(() => {
+          window.api.createLoginWindow();
+        }, 2000);
       };
 
     const handleUpdateAvailable = (event, data) => {

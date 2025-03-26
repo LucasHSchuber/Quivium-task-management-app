@@ -34,6 +34,9 @@ const api = {
   minimize: () => ipcRenderer.invoke('minimize'), // Minimize The Window
   maximize: () => ipcRenderer.invoke('maximize'), // Maximize The Window
 
+  // MESSAGE
+  sendMessage: (email, message) => ipcRenderer.invoke("sendMessage", email, message),
+
   // USERS
   createUser: args => ipcRenderer.invoke('createUser', args),  // create user
   loginUser: args => ipcRenderer.invoke('loginUser', args),  // login user
@@ -59,8 +62,11 @@ const api = {
   getTaskByTaskId: (task_id, user_id) => ipcRenderer.invoke("getTaskByTaskId", task_id, user_id), 
   updateTaskCompletion: (_check, task_id, user_id) => ipcRenderer.invoke("updateTaskCompletion", _check, task_id, user_id), 
   getTasksDueToday: user_id => ipcRenderer.invoke("getTasksDueToday", user_id), // fetch  tasks due today from sqlite
+  getUpcomingTasks: user_id => ipcRenderer.invoke("getUpcomingTasks", user_id), // fetch upcoming tasks
   updateTask: args => ipcRenderer.invoke("updateTask", args), // update task
   deleteTask: (task_id, user_id) => ipcRenderer.invoke("deleteTask", task_id, user_id), // delete task 
+  setTaskSticky: (task_id, list_id, user_id) => ipcRenderer.invoke("setTaskSticky", task_id, list_id, user_id), // set sticky in tasks table = 1
+  unsetTaskSticky: (task_id, list_id, user_id) => ipcRenderer.invoke("unsetTaskSticky", task_id, list_id, user_id), // set sticky in tasks table = 1
 
   // POSTS
   createNewPost: args => ipcRenderer.invoke("createNewPost", args), // create new post

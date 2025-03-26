@@ -1,7 +1,11 @@
 
-import { HashRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
+// import { useLocation } from "react-router-dom";
+
+import "./assets/css/toastStyles.css"
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 //importing pages and components
 //Home
@@ -83,6 +87,17 @@ function MainContent() {
       <div>
         <Routes><Route path="/register_window" element={<Register_window />} /></Routes>
       </div>
+
+
+
+      <ToastContainer
+                toastClassName="custom-toast"
+                bodyClassName="custom-toast-body"
+                progressClassName="custom-toast-progress"
+                position="bottom-left" // This positions the toast in the bottom-left corner
+                autoClose={2000} // The toast will auto-close after 5 seconds
+                newestOnTop={false}
+            />
 
     </ >
   );

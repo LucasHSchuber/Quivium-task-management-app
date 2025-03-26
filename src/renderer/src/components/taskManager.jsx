@@ -200,7 +200,7 @@ function TaskManager({ show, list_id, taskId, due_date, onSuccess, onSuccessDele
             </div>
             ) : (
                 <div>
-                    <p><b>Due Date:</b> {task.due_date || "No due date"}</p>
+                    <p><b>Due Date:</b> <em>{task.due_date || "No due date"}</em></p>
                     <p><b>List:</b> {lists.find(l => l.list_id === task.list_id)?.name || "No list selected"}</p>
                 </div>
             )}

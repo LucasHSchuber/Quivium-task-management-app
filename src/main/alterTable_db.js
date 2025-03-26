@@ -1,7 +1,7 @@
 export default function alterTable(db, currentVersion) {
   console.log("alterTable currentVersion", currentVersion)
   const updates = [
-      // { version: 10102, table: "news", column: "user_id", query: `ALTER TABLE news ADD COLUMN user_id INTEGER;` },
+      { version: 10201, table: "tasks", column: "sticky", query: `ALTER TABLE tasks ADD COLUMN sticky INTEGER DEFAULT 0;` },
   ];
 
   const updatesToApply = updates.filter(update => update.version > currentVersion);

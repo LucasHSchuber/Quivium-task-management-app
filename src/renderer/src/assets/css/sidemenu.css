@@ -17,29 +17,21 @@
     overflow-y: auto;
 }
 
-.logo img {
-    margin-left: 1.2em;
-    margin-top: 1em;
-    width: 4.5em;
-    padding: 10px;
+.sidemenu-logo-img{
+    width: 1.6em;
+    height: 1.6em;
+}
+
+.settings-icon{
+    color: rgb(73, 73, 73);
+    width: 0.85em;
     transition: 0.2s;
+    cursor: pointer;
 }
-.logo:hover img{
-    padding: 11.2px;
-}
-.logo-spin img {
-    animation: rotate 60s linear infinite;
+.settings-icon:hover{
+    color: rgb(0, 0, 0);
 }
 
-@keyframes rotate {
-    from {
-        transform: rotate(0deg);
-    }
-
-    to {
-        transform: rotate(360deg);
-    }
-}
 
 .sidemenu-box{
     color: rgb(24, 24, 24);
@@ -87,16 +79,6 @@
 .link-box-active{
     background-color: rgb(219, 219, 219) !important;
 }
-
-/* .small-width {
-    width: 1em;
-    text-align: center; 
-}
-
-.flex-grow-1 {
-    flex-grow: 1;
-} */
-
 
 .listcolor{
     margin-top: 0.18em;
@@ -161,6 +143,31 @@
     color: rgb(47, 47, 47);
     background-color: rgb(210, 210, 210);
 }
+
+
+.message-box{
+    position: fixed; 
+    bottom: 1.4em; 
+    left: 1.4em; 
+    padding: 0.4em 0.7em 0 0.7em;
+    /* background-color: rgb(212, 212, 212); */
+    border-radius: 5px;
+    transition: 0.2s;
+    cursor: pointer;
+}
+.message-box:hover{
+    background-color: rgb(212, 212, 212);
+    padding: 0.4em 0.7em 0 0.7em;
+}
+.message-icon{
+    font-size: 1em;
+    color: #505050;
+    transition: 0.2em;
+    cursor: pointer;
+}
+/* .message-icon:hover{
+    color: rgb(0, 0, 0);
+} */
 
 
 

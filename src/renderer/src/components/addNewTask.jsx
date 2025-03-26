@@ -7,6 +7,8 @@ function AddNewTask({ list_id, onSuccess }) {
   const [taskDescription, setTaskDescription] = useState("");
   const [selectedList, setSelectedList] = useState("");
 
+  const [errorBorderList, setErrorBorderList] = useState(false);
+
   const [lists, setLists] = useState([]);
 
   console.log('list_id', list_id);
@@ -41,6 +43,11 @@ function AddNewTask({ list_id, onSuccess }) {
   // handle submit 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!selectedList){
+      console.log("Missing list")
+      setErrorBorderList(true)
+      return;
+    }
     const user_id = localStorage.getItem("user_id")
     console.log('user_id', user_id);
     const data = {
@@ -119,10 +126,13 @@ function AddNewTask({ list_id, onSuccess }) {
         <div className="form-group">
           <label>Choose List:</label>
           <select
-            className="form-select"
+            className={`form-select ${errorBorderList ? "error-border" : ""}`}
             value={selectedList}
             onChange={(e) => setSelectedList(e.target.value)}
           >
+            {!list_id &&(
+              <option>Select list</option>
+            )}
             {lists.map((list) => (
               <option key={list.list_id} value={list.list_id}>
                 {list.name}

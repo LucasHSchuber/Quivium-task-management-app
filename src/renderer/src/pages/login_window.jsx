@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import fp from "../assets/images/diaphragm_black.png";
 import q from "../assets/images/q.png"
 import {  } from "@fortawesome/free-solid-svg-icons";
 
